@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 @layer base {
@@ -41,6 +41,11 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-1: #1f2b3f;
+    --chart-2: #163168;
+    --chart-3: #2254c5;
+    --chart-4: #2d64dc;
+    --chart-5: #3c78f4;
   }
   .dark {
     --background: 225 10% 10%;
@@ -75,6 +80,11 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-1: #ebf2fe;
+    --chart-2: #d0dffc;
+    --chart-3: #8fb7f9;
+    --chart-4: #689bf8;
+    --chart-5: #4f89f7;
   }
 }
 
