@@ -30,16 +30,15 @@ const Leaderboard = () => {
         <h1 className="text-lg font-medium mb-6">Leaderboard</h1>
         <div className="flex flex-col gap-2">
           {list.map((item) => (
-            <Card
-              key={item.id}
-              className="flex flex-row justify-between items-center rounded-full p-3"
-            >
-              <CardContent className="px-2 py-0 flex justify-start items-center gap-4 font-medium">
-                <span className="font-medium text-lg ms-2">{item.points}</span>
-                <CustomAvatar sizeClass="h-10 w-10" />
-                <CustomUsername sizeClass="font-bold text-lg" />
-              </CardContent>
-              <CardFooter className="flex justify-end gap-4 px-2 py-0">
+            <Card key={item.id}>
+              <CardContent className="flex flex-row justify-between items-center gap-4 font-medium px-4 py-2">
+                <div className="flex flex-row gap-2 items-center items">
+                  <span className="font-medium text-lg mx-2">
+                    {item.points}
+                  </span>
+                  <CustomAvatar sizeClass="h-10 w-10" />
+                  <CustomUsername sizeClass="font-bold text-lg" />
+                </div>
                 <span>
                   {item.badge === "Persuader" ? (
                     <Trophy size={32} color="#Ca8a04" />
@@ -48,10 +47,9 @@ const Leaderboard = () => {
                   ) : (
                     <Award size={32} color="#Ca8a04" />
                   )}
-
                   {/* {item.badge} */}
                 </span>
-              </CardFooter>
+              </CardContent>
             </Card>
           ))}
         </div>

@@ -61,8 +61,8 @@ const page = () => {
 
       <div className="grid grid-cols-6 gap-4 my-5">
         <div className="col-span-6 xl:col-span-6 bg-neutral-50 dark:bg-neutral-900 rounded-xl border p-4">
-          <div className="flex flex-row items-center gap-5">
-            <Card className="flex flex-row gap-1 border rounded-xl p-5">
+          <div className="flex flex-col md:flex-row items-center gap-5">
+            <Card className="flex flex-row gap-1 border rounded-xl p-5 w-full md:w-auto">
               <CustomAvatar sizeClass="h-20 w-20" />
               <Avatar>
                 <AvatarImage src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-square-250.png" />
@@ -73,7 +73,7 @@ const page = () => {
                 <AvatarFallback>CA</AvatarFallback>
               </Avatar>
             </Card>
-            <div>
+            <div className="w-full">
               <CustomUsername sizeClass="font-bold text-lg" />
 
               <p className="font-medium">Team Administrator</p>
