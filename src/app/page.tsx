@@ -30,7 +30,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 pt-20 sm:pt-24">
       <Card className="w-full max-w-md shadow-lg animate-in fade-in zoom-in-95">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-headline">Welcome to AuthStart</CardTitle>
+          <CardTitle className="text-center text-2xl font-headline">Welcome to your Campaign Management Dashboard!</CardTitle>
           <CardDescription className="text-center">You are successfully logged in.</CardDescription>
         </CardHeader>
         <CardContent>
