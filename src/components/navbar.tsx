@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { Compass, LogOut, User } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { useEffect, useState } from "react";
 import { SidebarTrigger } from "./ui/sidebar";
@@ -55,6 +55,10 @@ export default function Navbar() {
       ${scrollHeight > 15 ? "border-b" : "border-0"}`}
     >
       <SidebarTrigger variant="outline" size="icon" className="p-4 " />
+      <div className="flex flex-row gap-2 font-medium">
+        <Compass /> Campaign Compass
+      </div>
+
       <div className="flex items-center gap-2">
         {loading ? (
           <Skeleton className="h-8 w-20" />

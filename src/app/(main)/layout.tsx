@@ -87,24 +87,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-none">
-        <SidebarHeader className="py-4 flex flex-row justify-start">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <span className="font-bold">
-                    <Compass />
-                    Campaign Compass
-                  </span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarHeader>
+      <Sidebar collapsible="icon" className="border-none py-5">
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>menu</SidebarGroupLabel>
+            {/* <SidebarGroupLabel>menu</SidebarGroupLabel> */}
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
@@ -125,7 +111,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <span className="text-xs text-muted-foreground py-3">v.0.0.1</span>
+          <span className="text-xs text-muted-foreground px-5">v.0.0.1</span>
         </SidebarFooter>
       </Sidebar>
       <main className="w-full mx-5 mt-2 mb-5 ">
