@@ -1,3 +1,7 @@
+"use client";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Navbar from "@/components/navbar";
 import {
   Sidebar,
@@ -19,8 +23,7 @@ import {
   Gauge,
   BookUser,
 } from "lucide-react";
-
-import { cookies } from "next/headers";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Menu items.
 const items = [
@@ -51,19 +54,46 @@ const items = [
   },
 ];
 
-const MainLayout = async ({ children }: { children: React.ReactNode }) => {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/signin");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return (
+      <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || !user) {
+    return (
+      <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
+  }
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <SidebarProvider>
       <Sidebar collapsible="icon" className="border-none">
         <SidebarHeader className="py-4 flex flex-row justify-start">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <span className="font-medium">
+                  <span className="font-bold">
                     <Compass />
                     Campaign Compass
                   </span>
@@ -78,14 +108,14 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
                       asChild
                       // isActive={pathname === `${item.url}`}
                     >
                       <a href={item.url} className="flex items-center gap-2">
                         <item.icon />
-                        <span>{item.title}</span>
+                        <span className="font-medium">{item.title}</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

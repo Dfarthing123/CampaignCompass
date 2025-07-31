@@ -1,60 +1,11 @@
-"use client";
-import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Handshake } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/signin");
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) {
-    return (
-      <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      </div>
-    );
-  }
   const AVATAR_URI = "https://untitledui.com/images/avatars/jonathan-kelly";
   return (
     <div>
-      <Card className="w-full animate-in fade-in zoom-in-95">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-headline">
-            Welcome to your Campaign!
-          </CardTitle>
-          <CardDescription className="text-center">
-            You are successfully logged in.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground text-sm">
-            Authenticated as:
-          </p>
-          <p className="text-center font-medium text-primary mt-1 break-all">
-            {user.email}
-          </p>
-        </CardContent>
-      </Card>
-
       <h1 className="text-3xl font-bold my-5">Party A</h1>
       <p className="font-medium">
         Lorem ipsum dolor sit amet, adipiscing elit.
