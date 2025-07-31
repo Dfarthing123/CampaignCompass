@@ -338,3 +338,11 @@ export const UsernameGenerator = () => {
 
   return { id };
 };
+
+export const CustomUsername: React.FC<{ sizeClass: string }> = ({
+  sizeClass,
+}) => {
+  const [id, setId] = useState(() => generateRandomUsername());
+
+  return <div className={sizeClass}>{id}</div>;
+};

@@ -12,8 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { useEffect, useState } from "react";
 import { SidebarTrigger } from "./ui/sidebar";
@@ -25,7 +24,11 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/login");
+    router.push("/signin");
+  };
+
+  const handleProfile = async () => {
+    router.push("/profile");
   };
 
   const [scrollHeight, setScrollHeight] = useState(0);
@@ -72,6 +75,10 @@ export default function Navbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleProfile}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
