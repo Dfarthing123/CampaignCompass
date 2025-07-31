@@ -28,16 +28,16 @@ const Leaderboard = () => {
     <div className="">
       <ScrollArea className="h-72">
         <h1 className="text-lg font-medium mb-6">Leaderboard</h1>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col justify-center items-center gap-2">
           {list.map((item) => (
-            <Card key={item.id}>
-              <CardContent className="flex flex-row justify-between items-center gap-4 font-medium px-4 py-2">
+            <Card key={item.id} className="w-fit md:w-full rounded-full ">
+              <CardContent className="flex flex-row justify-between items-center gap-4  px-3 py-2">
                 <div className="flex flex-row gap-2 items-center items">
                   <span className="font-medium text-lg mx-2">
                     {item.points}
                   </span>
                   <CustomAvatar sizeClass="h-10 w-10" />
-                  <CustomUsername sizeClass="font-bold text-lg" />
+                  <CustomUsername sizeClass="font-bold text-md " />
                 </div>
                 <span>
                   {item.badge === "Persuader" ? (
