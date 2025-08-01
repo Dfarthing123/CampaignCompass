@@ -24,8 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 //import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -37,8 +35,6 @@ const formSchema = z.object({
 const ApprovalPage = () => {
   const router = useRouter();
   const { user, loading, role } = useAuth();
-
-  console.log(user, role);
 
   const form = useForm<ApprovalFormValues>({
     resolver: zodResolver(formSchema),

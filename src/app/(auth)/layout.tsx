@@ -1,35 +1,8 @@
 "use client";
-import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+
 import { Compass } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, role } = useAuth();
-  const router = useRouter();
-
-  // redirect user if signed in
-  useEffect(() => {
-    console.log(role);
-    if (user && user.emailVerified && role === "guest") {
-      router.push("/approval");
-    } else if (user && user.emailVerified) {
-      router.push("/");
-    }
-  }, [user, loading, router, role]);
-
-  if (loading || (user && role !== "guest")) {
-    return (
-      <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-[100vh]  bg-neutral-100 dark:bg-neutral-900 ">
       <div className="grid min-h-svh lg:grid-cols-2 w-full">

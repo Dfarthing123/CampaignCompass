@@ -55,11 +55,13 @@ const items = [
 ];
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !user) {
+      router.push("/signin");
+    } else if (loading && user && role === "guest") {
       router.push("/signin");
     }
   }, [user, loading, router]);
