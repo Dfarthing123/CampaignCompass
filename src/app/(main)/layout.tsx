@@ -10,7 +10,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -90,7 +89,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <Sidebar collapsible="icon" className="border-none py-5">
         <SidebarContent>
           <SidebarGroup>
-            {/* <SidebarGroupLabel>menu</SidebarGroupLabel> */}
+            <SidebarGroupLabel>menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (

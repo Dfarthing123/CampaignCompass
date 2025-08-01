@@ -6,3 +6,13 @@ const authFormSchema = z.object({
 });
 
 export type AuthFormValues = z.infer<typeof authFormSchema>;
+
+
+
+const approvalFormSchema = z.object({
+  question_1: z.string(),
+  question_2: z.string(),
+   question_3: z.string(),
+});
+
+export type ApprovalFormValues = z.infer<typeof approvalFormSchema>;

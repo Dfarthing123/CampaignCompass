@@ -54,7 +54,7 @@ export default function SignupPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Sign-up Failed",
+        title: "Sign up Failed",
         description:
           error.message || "An unexpected error occurred. Please try again.",
       });
@@ -64,7 +64,7 @@ export default function SignupPage() {
   return (
     <Card className="w-full max-w-sm animate-in fade-in-90">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline">Sign Up</CardTitle>
+        <CardTitle className="text-2xl font-headline">Sign up</CardTitle>
         <CardDescription>Create a new account to get started.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,8 +110,8 @@ export default function SignupPage() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Button variant="link" asChild className="p-0 h-auto">
+          Already have an account?
+          <Button variant="link" asChild className="p-0 h-auto ms-2">
             <Link href="/signin">Sign in</Link>
           </Button>
         </p>
