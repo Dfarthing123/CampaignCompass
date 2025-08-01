@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-//import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context";
 import type { ApprovalFormValues } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 //import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -34,7 +36,9 @@ const formSchema = z.object({
 
 const ApprovalPage = () => {
   const router = useRouter();
-  //const {  } = useAuth();
+  const { user, loading, role } = useAuth();
+
+  console.log(user, role);
 
   const form = useForm<ApprovalFormValues>({
     resolver: zodResolver(formSchema),
@@ -51,11 +55,12 @@ const ApprovalPage = () => {
     <Card className="w-full max-w-sm animate-in fade-in-90 mt-5">
       <CardHeader>
         <CardTitle className="text-2xl font-headline">
-          Welcome UserName
+          Welcome {role && role}
         </CardTitle>
         <CardDescription>
-          Thank you for registering as a volunteer! As part of our screening
-          process, please take a moment to answer the following questions.
+          Thank you {user && user.email} for registering as a volunteer! As part
+          of our screening process, please take a moment to answer the following
+          questions.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -67,7 +72,6 @@ const ApprovalPage = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {" "}
                     What interests you about working on this campaign?
                   </FormLabel>
                   <FormControl>

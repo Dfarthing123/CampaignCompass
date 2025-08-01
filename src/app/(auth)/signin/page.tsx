@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 //import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -40,6 +41,7 @@ const SignInPage = () => {
   const router = useRouter();
   const { signIn, resendVerificationEmail } = useAuth();
 
+  //
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,6 +61,7 @@ const SignInPage = () => {
 
     try {
       await signIn(values);
+      //console.log(user);
       router.push("/"); // ✅ Redirect to home after successful sign-in
     } catch (error: any) {
       console.log(error.code, error);

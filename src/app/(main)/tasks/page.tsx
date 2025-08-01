@@ -5,6 +5,16 @@ import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { columns, Task } from "./columns";
 import { DataTable } from "./datatable";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Plus, ClipboardList } from "lucide-react";
 
 type TaskItem = {
   id: string;
@@ -39,7 +49,32 @@ const TaskListPage = () => {
 
   return (
     <div className="p-2">
-      <h1 className="text-2xl font-bold mb-4">Tasks</h1>
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex justify-start gap-3">
+          <ClipboardList />
+          <h1 className="font-medium">Tasks</h1>
+        </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline">
+              <Plus />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="mb-4">Tasks</SheetTitle>
+              <SheetDescription asChild>
+                <div>
+                  <p className="text-center text-muted-foreground text-sm">
+                    New task
+                  </p>
+                  <p className="text-center font-medium text-primary mt-1 break-all"></p>
+                </div>
+              </SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {tasks.length === 0 ? (
         <p>No tasks found.</p>

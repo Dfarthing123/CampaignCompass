@@ -315,21 +315,11 @@ export const CustomAvatar: React.FC<{ sizeClass: string }> = ({
   const initials = getInitials(id);
   const dataUri = useMemo(() => svgToBase64(generateSVG(id)), [id]);
 
-  // const handleRandomize = () => {
-  //   setId(generateRandomUsername());
-  // };
-
   return (
-    <div>
-      <Avatar className={sizeClass}>
-        <AvatarImage src={dataUri}></AvatarImage>
-        <AvatarFallback>{initials}</AvatarFallback>
-      </Avatar>
-      {/*<div className="font-medium text-lg">{id}</div>
-       <Button variant="outline" onClick={handleRandomize}>
-        Generate Icon
-      </Button> */}
-    </div>
+    <Avatar className={sizeClass}>
+      <AvatarImage src={dataUri}></AvatarImage>
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
   );
 };
 

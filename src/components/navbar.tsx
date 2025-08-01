@@ -54,19 +54,19 @@ export default function Navbar() {
       className={`py-4 flex items-center justify-between sticky top-0 z-40 bg-neutral-50 dark:bg-neutral-900
       ${scrollHeight > 15 ? "border-b" : "border-0"}`}
     >
-      <SidebarTrigger variant="outline" size="icon" className="p-4 " />
+      <SidebarTrigger variant="outline" size="icon" className="p-4" />
       <div className="flex flex-row gap-2 font-medium">
         <Compass /> Campaign Compass
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center pe-2">
         {loading ? (
           <Skeleton className="h-8 w-20" />
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <CustomAvatar sizeClass="h-12 w-12" />
+                <CustomAvatar sizeClass="h-10 w-10" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -90,14 +90,7 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <>
-            <Button variant="ghost" asChild>
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Sign up</Link>
-            </Button>
-          </>
+          <></>
         )}
       </div>
     </nav>

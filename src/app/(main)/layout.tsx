@@ -37,19 +37,20 @@ const items = [
     icon: Gauge,
   },
   {
+    title: "Team",
+    url: "members",
+    icon: BookUser,
+  },
+  {
     title: "Tasks",
     url: "tasks",
     icon: ClipboardList,
   },
+
   {
     title: "Contacts",
     url: "contacts",
     icon: ContactRound,
-  },
-  {
-    title: "Members",
-    url: "members",
-    icon: BookUser,
   },
 ];
 
@@ -74,16 +75,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (loading || !user) {
-    return (
-      <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      </div>
-    );
-  }
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" className="border-none py-5">
