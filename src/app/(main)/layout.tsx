@@ -33,23 +33,23 @@ const items = [
   },
   {
     title: "Dashboard",
-    url: "dashboard",
+    url: "/dashboard",
     icon: Gauge,
   },
   {
     title: "Team",
-    url: "members",
+    url: "/members",
     icon: BookUser,
   },
   {
     title: "Tasks",
-    url: "tasks",
+    url: "/tasks",
     icon: ClipboardList,
   },
 
   {
     title: "Contacts",
-    url: "contacts",
+    url: "/contacts",
     icon: ContactRound,
   },
 ];
