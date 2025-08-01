@@ -15,11 +15,13 @@ import {
   signInWithEmailAndPassword,
   sendEmailVerification
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth,db } from '@/lib/firebase';
+import { doc, setDoc, getDoc} from "firebase/firestore";
 import type { AuthFormValues } from '@/types';
 
 interface AuthContextType {
   user: User | null;
+  role: string | null;
   loading: boolean;
   signIn: (data: AuthFormValues) => Promise<any>;
   signUp: (data: AuthFormValues) => Promise<any>;
@@ -37,16 +39,31 @@ const resendVerificationEmail = async (user: User) => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    setUser(user);
 
-    return () => unsubscribe();
-  }, []);
+    if (user) {
+      (async () => {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setRole(userDoc.data().role || null);
+        } else {
+          setRole(null);
+        }
+        setLoading(false);
+      })();
+    } else {
+      setRole(null);
+      setLoading(false);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const signIn = async (data: AuthFormValues) => {
   const userCredential = await signInWithEmailAndPassword(
@@ -77,6 +94,14 @@ const signUp = async (data: AuthFormValues) => {
   );
   const user = userCredential.user;
 
+
+// Save user profile with role to Firestore
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    email: user.email,
+    role: "user",  // default role, you can customize
+  });
+
   // Send verification email using modular SDK
   await sendEmailVerification(user);
 
@@ -94,6 +119,7 @@ const signUp = async (data: AuthFormValues) => {
 
   const value = {
     user,
+    role,
     loading,
     signIn,
     signUp,
