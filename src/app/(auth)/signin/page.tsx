@@ -1,54 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
-import type { AuthFormValues } from '@/types';
-import { User } from 'firebase/auth';
+import type { AuthFormValues } from "@/types";
+import { User } from "firebase/auth";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+//import { toast } from "@/hooks/use-toast";
+
+const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters long." }),
+});
 
 const SignInPage = () => {
   const router = useRouter();
   const { signIn, resendVerificationEmail } = useAuth();
 
-  const [formData, setFormData] = useState<AuthFormValues>({
-    email: '',
-    password: '',
+  const form = useForm<AuthFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [unverifiedUser, setUnverifiedUser] = useState<User | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: AuthFormValues) => {
     setError(null);
     setSuccess(null);
     setUnverifiedUser(null);
-    setLoading(true);
 
     try {
-      await signIn(formData);
-      router.push('/'); // ✅ Redirect to home after successful sign-in
-    } catch (err: any) {
-      if (err.code === 'auth/email-not-verified') {
-        setUnverifiedUser(err.user);
-        setError('Your email is not verified. Please check your inbox.');
-      } else if (err.code === 'auth/user-not-found') {
-        setError('No user found with this email.');
-      } else if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password.');
+      await signIn(values);
+      router.push("/"); // ✅ Redirect to home after successful sign-in
+    } catch (error: any) {
+      console.log(error.code, error);
+      if (error.code === "auth/email-not-verified") {
+        setUnverifiedUser(error.user);
+        setError("Your email is not verified. Please check your inbox.");
+        // toast({
+        //   variant: "destructive",
+        //   title: "Your email is not verified",
+        //   description: "Please check your inbox.", // error.message || "Please check your inbox.",
+        // });
+      } else if (error.code === "auth/user-not-found") {
+        setError("No user found with this email.");
+      } else if (error.code === "auth/invalid-credential") {
+        setError("Incorrect account details.");
       } else {
-        setError(err.message || 'An error occurred during sign-in.');
+        setError(error.message || "An error occurred during sign-in.");
       }
     } finally {
-      setLoading(false);
+      //
     }
   };
 
@@ -56,69 +86,80 @@ const SignInPage = () => {
     if (!unverifiedUser) return;
     try {
       await resendVerificationEmail(unverifiedUser);
-      setSuccess('Verification email resent. Please check your inbox.');
+      setSuccess("Verification email resent. Please check your inbox.");
       setError(null);
     } catch (err: any) {
-      setError('Failed to resend verification email.');
+      setError("Failed to resend verification email.");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded">
-      <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-
-      {error && <div className="text-red-600 mb-4">{error}</div>}
-      {success && <div className="text-green-600 mb-4">{success}</div>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="Email"
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Password"
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? 'Signing in...' : 'Sign In'}
-        </button>
-      </form>
-
-      {unverifiedUser && (
-        <div className="mt-4 text-sm text-gray-700">
-          Didn’t get the email?{' '}
-          <button
-            onClick={handleResendVerification}
-            className="text-blue-600 underline"
-          >
-            Resend Verification Email
-          </button>
-        </div>
-      )}
-
-      <div className="mt-6 text-center text-sm text-gray-700">
-        Don’t have an account?{' '}
-        <Link href="/signup" className="text-blue-600 underline">
-          Sign up
-        </Link>
-      </div>
-    </div>
+    <Card className="w-full max-w-sm animate-in fade-in-90">
+      <CardHeader>
+        <CardTitle className="text-2xl font-headline">Sign in</CardTitle>
+        <CardDescription>Enter your account details.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && <div className="text-red-600 mb-4">{error}</div>}
+        {success && <div className="text-green-600 mb-4">{success}</div>}
+        {unverifiedUser && (
+          <div className="my-4 text-sm text-gray-700">
+            Didn’t get the email?{" "}
+            <button
+              onClick={handleResendVerification}
+              className="text-blue-600 underline"
+            >
+              Resend Verification Email
+            </button>
+          </div>
+        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Signing in.." : "Sign in"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <p className="text-sm text-muted-foreground">
+          Don’t have an account?
+          <Button variant="link" asChild className="p-0 h-auto ms-2">
+            <Link href="/signup">Sign up</Link>
+          </Button>
+        </p>
+      </CardFooter>
+    </Card>
   );
 };
 

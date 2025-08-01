@@ -3,21 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "@/components/ui/toaster";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-import { Inbox, ClipboardList, ContactRound } from "lucide-react";
-import Navbar from "@/components/navbar";
-import Link from "next/link";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
