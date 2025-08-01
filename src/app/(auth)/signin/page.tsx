@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from "@/context/auth-context";
 import type { AuthFormValues } from '@/types';
 import { User } from 'firebase/auth';
@@ -101,7 +102,7 @@ const SignInPage = () => {
 
       {unverifiedUser && (
         <div className="mt-4 text-sm text-gray-700">
-          Didn't get the email?{' '}
+          Didn’t get the email?{' '}
           <button
             onClick={handleResendVerification}
             className="text-blue-600 underline"
@@ -110,6 +111,13 @@ const SignInPage = () => {
           </button>
         </div>
       )}
+
+      <div className="mt-6 text-center text-sm text-gray-700">
+        Don’t have an account?{' '}
+        <Link href="/signup" className="text-blue-600 underline">
+          Sign up
+        </Link>
+      </div>
     </div>
   );
 };
