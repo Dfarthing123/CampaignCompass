@@ -10,6 +10,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -21,16 +22,14 @@ import {
   Compass,
   Gauge,
   BookUser,
+  Target,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CampaignSwitcher } from "@/components/campaignswitcher";
+import { AudioWaveform, Command, Goal } from "lucide-react";
 
 // Menu items.
 const items = [
-  {
-    title: "Campaign",
-    url: "/",
-    icon: Compass,
-  },
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -51,6 +50,24 @@ const items = [
     title: "Contacts",
     url: "/contacts",
     icon: ContactRound,
+  },
+];
+
+const teams = [
+  {
+    name: "Party A",
+    logo: Goal,
+    plan: "Campaign X",
+  },
+  {
+    name: "Party B",
+    logo: Goal,
+    plan: "Campaign Y",
+  },
+  {
+    name: "Party C",
+    logo: Goal,
+    plan: "Campaign Z",
   },
 ];
 
@@ -79,7 +96,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-none py-5">
+      <Sidebar collapsible="icon" className="border-none pb-5 pt-3">
+        <SidebarHeader>
+          <CampaignSwitcher teams={teams} />
+        </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>menu</SidebarGroupLabel>

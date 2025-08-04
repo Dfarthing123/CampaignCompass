@@ -10,10 +10,8 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -26,7 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { UsernameGenerator } from "@/components/customavatar";
-import { Apple, Hand, PartyPopper, Smartphone } from "lucide-react";
+import { PartyPopper, Smartphone } from "lucide-react";
 
 //import { toast } from "@/hooks/use-toast";
 
