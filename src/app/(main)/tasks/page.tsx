@@ -48,7 +48,7 @@ const TaskListPage = () => {
   }, []);
 
   return (
-    <div className="p-2">
+    <div className="">
       <div className="flex justify-between items-center mb-5">
         <div className="flex justify-start gap-3">
           <ClipboardList />

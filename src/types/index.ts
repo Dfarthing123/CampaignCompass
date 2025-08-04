@@ -7,12 +7,17 @@ const authFormSchema = z.object({
 
 export type AuthFormValues = z.infer<typeof authFormSchema>;
 
+const inviteFormSchema = z.object({
+  email: z.string(),
+});
+
+export type InviteFormSchema = z.infer<typeof inviteFormSchema>;
 
 
 const approvalFormSchema = z.object({
-  question_1: z.string(),
-  question_2: z.string(),
-   question_3: z.string(),
+  name: z.string(),
+  email: z.string(),
+  questions: z.string(),
 });
 
 export type ApprovalFormValues = z.infer<typeof approvalFormSchema>;

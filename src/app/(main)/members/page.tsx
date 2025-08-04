@@ -1,3 +1,4 @@
+import InviteForm from "@/components/forms/invite";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -27,12 +28,7 @@ const page = () => {
             <SheetHeader>
               <SheetTitle className="mb-4">Members</SheetTitle>
               <SheetDescription asChild>
-                <div>
-                  <p className="text-center text-muted-foreground text-sm">
-                    Invite Volunteer
-                  </p>
-                  <p className="text-center font-medium text-primary mt-1 break-all"></p>
-                </div>
+                <InviteForm />
               </SheetDescription>
             </SheetHeader>
           </SheetContent>
