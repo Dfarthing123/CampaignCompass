@@ -69,7 +69,11 @@ const page = () => {
                   condimentum ipsum ornare et. elit
                 </p>
               </div>
-              <Button className="mt-5">Approve</Button>
+              <div className="mt-5 flex flex-row gap-2">
+                <Button>Approve</Button>
+                <Button variant="outline">Delay</Button>
+                <Button variant="destructive">Reject</Button>
+              </div>
             </div>
           </div>
         </div>
