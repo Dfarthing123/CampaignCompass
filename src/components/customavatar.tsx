@@ -3,13 +3,8 @@
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "@/components/ui/button";
-
-// Utility to generate a random alphanumeric string
-// const generateRandomId = (length = 8) => {
-//   return Math.random()
-//     .toString(36)
-//     .substring(2, 2 + length);
-// };
+import { Slider } from "./ui/slider";
+import { parse } from "path";
 
 const animals = [
   "Ox",
@@ -414,7 +409,7 @@ function generateRandomUsername(): string {
   const noun = capitalize(nouns[Math.floor(Math.random() * nouns.length)]);
   const number = Math.floor(Math.random() * 100);
 
-  return `${adjective}${noun}${number}`;
+  return `${adjective}_${noun}_${number}`;
 }
 
 const SHAPES = [
@@ -434,11 +429,6 @@ function stringHash(str: string): number {
   }
   return Math.abs(hash);
 }
-
-// function stringToColor(str: string): string {
-//   const h = stringHash(str) % 360;
-//   return `hsl(${h}, 50%, 50%)`;
-// }
 
 function stringToAccessibleColor(str: string): string {
   let hash = 0;
@@ -573,6 +563,16 @@ export const UsernameGenerator: React.FC = () => {
     setUsername(newUsername);
   };
 
+  const formatNumber = (num: string): string => {
+    if (Number(num) < 10) {
+      return "00" + num;
+    } else if (Number(num) < 100) {
+      return "0" + num;
+    } else {
+      return num;
+    }
+  };
+
   return (
     <div>
       <div className="space-y-3">
@@ -610,10 +610,19 @@ export const UsernameGenerator: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Enter a number
+            Select a number
           </label>
+          <Slider
+            className="my-5"
+            defaultValue={[1]}
+            min={1}
+            max={999}
+            step={1}
+            onValueChange={(v) => setNumber(formatNumber(v.toString()))}
+          ></Slider>
           <input
             type="text"
+            disabled
             placeholder="e.g., 42"
             className="w-full border p-2 rounded-xl mt-1"
             value={number}
