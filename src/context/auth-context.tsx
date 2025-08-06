@@ -100,6 +100,7 @@ const signUp = async (data: AuthFormValues) => {
     uid: user.uid,
     email: user.email,
     role: "user",  // default role, you can customize
+    status: "awaiting_approval"
   });
 
   // Send verification email using modular SDK
