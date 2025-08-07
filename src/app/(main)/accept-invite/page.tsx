@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {app} from "@/lib/firebase"; // your initialized Firebase app
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  sendEmailVerification
+} from 'firebase/auth';
+
 
 const AcceptInvite: React.FC = () => {
   const searchParams = useSearchParams();
@@ -40,6 +46,13 @@ const AcceptInvite: React.FC = () => {
       const result: any = await acceptInvite({ email, token, password });
 
       if (result.data?.success) {
+        // 1. Sign in the user to get auth context
+        const auth = getAuth(app);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // 2. Send verification email
+        await sendEmailVerification(userCredential.user);
+
         setStatus("success");
         setMessage("🎉 Account created! You can now log in.");
       } else {

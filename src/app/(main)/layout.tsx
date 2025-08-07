@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Navbar from "@/components/navbar";
 import {
@@ -27,6 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignSwitcher } from "@/components/campaignswitcher";
 import { AudioWaveform, Command, Goal } from "lucide-react";
+import path from "path";
 
 // Menu items.
 const items = [
@@ -75,15 +76,38 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, role } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
+/*   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
     } else if (loading && user && role === "guest") {
       router.push("/signin");
     }
-  }, [user, loading, router]);
+  }, [user, loading, router]); */
 
-  if (loading || !user) {
+  const noLoaderRoutes = ["/accept-invite"];
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    console.log(pathname);
+  }, [pathname]);
+
+
+  useEffect(() => {
+  const publicRoutes = ["/accept-invite"]; // add any other public routes here
+  const isPublicRoute = publicRoutes.includes(pathname);
+
+  if (!loading && !user && !isPublicRoute) {
+    router.push("/signin");
+  } else if (loading && user && role === "guest" && !isPublicRoute) {
+    router.push("/signin");
+  }
+}, [user, loading, role, router]);
+
+
+  
+
+  if ((loading || !user) && !noLoaderRoutes.includes(pathname)) {
     return (
       <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
         <div className="w-full max-w-md space-y-4">
