@@ -1,15 +1,67 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useState,useEffect,} from "react";
 import {getFunctions, httpsCallable } from "firebase/functions";
 import {getAuth}  from "firebase/auth";
 import {app} from "@/lib/firebase"; // your initialized Firebase app
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  createdAt: any;
+  reportsTo: string;
+  coins?: number;
+}
 
 const Admin: React.FC = () => {
   const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const auth = getAuth(app);
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          setError("You must be logged in.");
+          setLoading(false);
+          return;
+        }
+
+        const db = getFirestore(app);
+        const q = query(
+          collection(db, "users"),
+          where("reportsTo", "==", currentUser.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const usersList: User[] = [];
+
+        querySnapshot.forEach((doc) => {
+          usersList.push({ id: doc.id, ...doc.data() } as User);
+        });
+
+        setUsers(usersList);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch users.");
+      }
+      setLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
+
+
+
 
   const handleSendInvite = async () => {
     setError("");
@@ -31,8 +83,9 @@ const Admin: React.FC = () => {
   };
 
   return (
+    <>
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-xl shadow-lg bg-white">
-      <h2 className="text-xl font-semibold mb-4">Send Admin Invite</h2>
+      <h2 className="text-xl font-semibold mb-4">Send Invite</h2>
 
       <input
         type="email"
@@ -70,6 +123,32 @@ const Admin: React.FC = () => {
         </div>
       )}
     </div>
+    My Team
+    <table className="min-w-full border border-gray-300 rounded-md">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-4 py-2 border">Email</th>
+            <th className="px-4 py-2 border">Role</th>
+            <th className="px-4 py-2 border">Coins</th>
+            <th className="px-4 py-2 border">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id} className="text-center border-t">
+              <td className="px-4 py-2 border">{user.email}</td>
+              <td className="px-4 py-2 border">{user.role}</td>
+              <td className="px-4 py-2 border">{user.coins ?? "-"}</td>
+              <td className="px-4 py-2 border">
+                {user.createdAt?.toDate
+                  ? user.createdAt.toDate().toLocaleDateString()
+                  : "-"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 };
 
