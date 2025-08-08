@@ -13,6 +13,15 @@ interface User {
   createdAt: any;
   reportsTo: string;
   coins?: number;
+  status?: string;
+}
+
+interface Invite {
+  createdAt: any;
+  expiresAt: any;
+  email: string;
+  used: boolean;
+  usedAt?: any;
 }
 
 const Admin: React.FC = () => {
@@ -21,7 +30,7 @@ const Admin: React.FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-
+  const [Invites, setInvites] = useState<Invite[]>([]);
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -60,7 +69,43 @@ const Admin: React.FC = () => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    const fetchInvites = async () => {
+      setLoading(true);
+      setError("");
 
+      try {
+        const auth = getAuth(app);
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          setError("You must be logged in.");
+          setLoading(false);
+          return;
+        }
+
+        const db = getFirestore(app);
+        const q = query(
+          collection(db, "invites"),
+          where("createdBy", "==", currentUser.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const inviteList: Invite[] = [];
+
+        querySnapshot.forEach((doc) => {
+          inviteList.push({ email: doc.id, ...doc.data() } as Invite);
+        });
+
+        setInvites(inviteList);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch users.");
+      }
+      setLoading(false);
+    };
+
+    fetchInvites();
+  }, []);
 
 
   const handleSendInvite = async () => {
@@ -127,6 +172,7 @@ const Admin: React.FC = () => {
     <table className="min-w-full border border-gray-300 rounded-md">
         <thead className="bg-gray-100">
           <tr>
+            <th className="px-4 py-2 border">Status</th>
             <th className="px-4 py-2 border">Email</th>
             <th className="px-4 py-2 border">Role</th>
             <th className="px-4 py-2 border">Coins</th>
@@ -136,12 +182,52 @@ const Admin: React.FC = () => {
         <tbody>
           {users.map((user) => (
             <tr key={user.id} className="text-center border-t">
+              <td className="px-4 py-2 border">{user.status}</td>
               <td className="px-4 py-2 border">{user.email}</td>
               <td className="px-4 py-2 border">{user.role}</td>
               <td className="px-4 py-2 border">{user.coins ?? "-"}</td>
               <td className="px-4 py-2 border">
                 {user.createdAt?.toDate
-                  ? user.createdAt.toDate().toLocaleDateString()
+                  ? user.createdAt.toDate().toLocaleString()
+                  : "-"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+
+
+    Invites
+    <table className="min-w-full border border-gray-300 rounded-md">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-4 py-2 border">createdAt</th>
+            <th className="px-4 py-2 border">expiresAt</th>
+            <th className="px-4 py-2 border">email</th>
+            <th className="px-4 py-2 border">used</th>
+            <th className="px-4 py-2 border">usedAt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Invites.map((invite) => (
+            <tr key={invite.email} className="text-center border-t">
+              <td className="px-4 py-2 border">
+                {invite.createdAt?.toDate
+                  ? invite.createdAt.toDate().toLocaleString()
+                  : "-"}
+              </td>
+              <td className="px-4 py-2 border">
+                {invite.expiresAt?.toDate
+                  ? invite.expiresAt.toDate().toLocaleString()
+                  : "-"}
+              </td>
+              <td className="px-4 py-2 border">{invite.email}</td>
+              <td className="px-4 py-2 border">{<td>{invite.used ? "✅" : "❌"}</td>}</td>
+
+              <td className="px-4 py-2 border">
+                {invite.usedAt
+                  ? invite.usedAt.toDate().toLocaleString()
                   : "-"}
               </td>
             </tr>
