@@ -29,6 +29,9 @@ import { CampaignSwitcher } from "@/components/campaignswitcher";
 import { AudioWaveform, Command, Goal } from "lucide-react";
 import path from "path";
 
+
+
+
 // Menu items.
 const items = [
   {
@@ -54,6 +57,11 @@ const items = [
   },
 ];
 
+
+
+
+
+
 const teams = [
   {
     name: "Party A",
@@ -75,6 +83,13 @@ const teams = [
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, role } = useAuth();
   const router = useRouter();
+
+  const adminItem = {
+    title: "Admin",
+    url: "/admin",
+    icon: Command, // Or any icon you prefer
+  };
+  const menuItems = role === "admin" ? [...items, adminItem] : items;
 
 /*   useEffect(() => {
     if (!loading && !user) {
@@ -129,7 +144,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <SidebarGroupLabel>menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
+                {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
                       asChild
