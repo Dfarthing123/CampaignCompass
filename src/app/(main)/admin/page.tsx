@@ -1,10 +1,29 @@
 "use client";
 
-import React, {useState,useEffect,} from "react";
-import {getFunctions, httpsCallable } from "firebase/functions";
-import {getAuth}  from "firebase/auth";
-import {app} from "@/lib/firebase"; // your initialized Firebase app
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { app } from "@/lib/firebase"; // Your Firebase client config
+import {
+  ColumnDef,
+  SortingState,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DataTablePagination } from "@/components/tablepagination";
 
 interface User {
   id: string;
@@ -24,90 +43,60 @@ interface Invite {
   usedAt?: any;
 }
 
-const Admin: React.FC = () => {
+export default function AdminPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [invites, setInvites] = useState<Invite[]>([]);
   const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [Invites, setInvites] = useState<Invite[]>([]);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 20,
+  });
+
+  // Fetch data when logged in
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      setError("");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
 
       try {
-        const auth = getAuth(app);
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setError("You must be logged in.");
-          setLoading(false);
-          return;
-        }
-
-        const db = getFirestore(app);
-        const q = query(
+        // Fetch users
+        const usersQuery = query(
           collection(db, "users"),
-          where("reportsTo", "==", currentUser.uid)
+          where("reportsTo", "==", user.uid)
+        );
+        const userDocs = await getDocs(usersQuery);
+        setUsers(
+          userDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as User[]
         );
 
-        const querySnapshot = await getDocs(q);
-        const usersList: User[] = [];
-
-        querySnapshot.forEach((doc) => {
-          usersList.push({ id: doc.id, ...doc.data() } as User);
-        });
-
-        setUsers(usersList);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch users.");
-      }
-      setLoading(false);
-    };
-
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    const fetchInvites = async () => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const auth = getAuth(app);
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setError("You must be logged in.");
-          setLoading(false);
-          return;
-        }
-
-        const db = getFirestore(app);
-        const q = query(
+        // Fetch invites
+        const invitesQuery = query(
           collection(db, "invites"),
-          where("createdBy", "==", currentUser.uid)
+          where("createdBy", "==", user.uid)
         );
-
-        const querySnapshot = await getDocs(q);
-        const inviteList: Invite[] = [];
-
-        querySnapshot.forEach((doc) => {
-          inviteList.push({ email: doc.id, ...doc.data() } as Invite);
-        });
-
-        setInvites(inviteList);
+        const inviteDocs = await getDocs(invitesQuery);
+        setInvites(
+          inviteDocs.docs.map((doc) => ({
+            email: doc.id,
+            ...doc.data(),
+          })) as Invite[]
+        );
       } catch (err) {
-        console.error(err);
-        setError("Failed to fetch users.");
+        console.error("Error fetching data:", err);
       }
-      setLoading(false);
-    };
+    });
 
-    fetchInvites();
+    return () => unsubscribe();
   }, []);
 
-
+  // Send invite
   const handleSendInvite = async () => {
     setError("");
     setInviteLink("");
@@ -117,7 +106,6 @@ const Admin: React.FC = () => {
       const functions = getFunctions(app);
       const createInvite = httpsCallable(functions, "createInvite");
       const result: any = await createInvite({ email });
-
       setInviteLink(result.data.inviteLink);
     } catch (err: any) {
       console.error("Invite error:", err);
@@ -127,11 +115,122 @@ const Admin: React.FC = () => {
     }
   };
 
-  return (
-    <>
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded-xl shadow-lg bg-white">
-      <h2 className="text-xl font-semibold mb-4">Send Invite</h2>
+  // Table columns for Users
+  const userColumns: ColumnDef<User>[] = [
+    { accessorKey: "status", header: "Status" },
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "role", header: "Role" },
+    { accessorKey: "coins", header: "Coins" },
+    {
+      accessorKey: "createdAt",
+      header: "Created At",
+      cell: ({ row }) =>
+        row.original.createdAt?.toDate
+          ? row.original.createdAt.toDate().toLocaleString()
+          : "-",
+    },
+  ];
 
+  // Table columns for Invites
+  const inviteColumns: ColumnDef<Invite>[] = [
+    {
+      accessorKey: "createdAt",
+      header: "Created At",
+      cell: ({ row }) =>
+        row.original.createdAt?.toDate
+          ? row.original.createdAt.toDate().toLocaleString()
+          : "-",
+    },
+    {
+      accessorKey: "expiresAt",
+      header: "Expires At",
+      cell: ({ row }) =>
+        row.original.expiresAt?.toDate
+          ? row.original.expiresAt.toDate().toLocaleString()
+          : "-",
+    },
+    { accessorKey: "email", header: "Email" },
+    {
+      accessorKey: "used",
+      header: "Used",
+      cell: ({ row }) => (row.original.used ? "✅" : "❌"),
+    },
+    {
+      accessorKey: "usedAt",
+      header: "Used At",
+      cell: ({ row }) =>
+        row.original.usedAt
+          ? row.original.usedAt.toDate().toLocaleString()
+          : "-",
+    },
+  ];
+
+  // Reusable DataTable component
+  function DataTable<TData, TValue>({
+    columns,
+    data,
+  }: {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+  }) {
+    const table = useReactTable({
+      data,
+      columns,
+      getCoreRowModel: getCoreRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
+      onSortingChange: setSorting,
+      getSortedRowModel: getSortedRowModel(),
+      onPaginationChange: setPagination,
+      state: { sorting, pagination },
+    });
+
+    return (
+      <div className="rounded border mt-4">
+        <Table className="table-fixed">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <DataTablePagination table={table} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <h2 className="text-xl font-semibold mb-4">Send Invite</h2>
       <input
         type="email"
         value={email}
@@ -139,7 +238,6 @@ const Admin: React.FC = () => {
         placeholder="Enter user email"
         className="w-full px-4 py-2 mb-4 border rounded-md"
       />
-
       <button
         onClick={handleSendInvite}
         disabled={loading || !email}
@@ -147,7 +245,6 @@ const Admin: React.FC = () => {
       >
         {loading ? "Sending..." : "Create Invite"}
       </button>
-
       {inviteLink && (
         <div className="mt-4 text-green-700">
           Invite Link:{" "}
@@ -161,81 +258,15 @@ const Admin: React.FC = () => {
           </a>
         </div>
       )}
-
       {error && (
-        <div className="mt-4 text-red-600 font-medium">
-          ⚠️ {error}
-        </div>
+        <div className="mt-4 text-red-600 font-medium">⚠️ {error}</div>
       )}
+
+      <h3 className="mt-10 text-lg font-bold">My Team</h3>
+      <DataTable columns={userColumns} data={users} />
+
+      <h3 className="mt-10 text-lg font-bold">Invites</h3>
+      <DataTable columns={inviteColumns} data={invites} />
     </div>
-    My Team
-    <table className="min-w-full border border-gray-300 rounded-md">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 border">Status</th>
-            <th className="px-4 py-2 border">Email</th>
-            <th className="px-4 py-2 border">Role</th>
-            <th className="px-4 py-2 border">Coins</th>
-            <th className="px-4 py-2 border">Created At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id} className="text-center border-t">
-              <td className="px-4 py-2 border">{user.status}</td>
-              <td className="px-4 py-2 border">{user.email}</td>
-              <td className="px-4 py-2 border">{user.role}</td>
-              <td className="px-4 py-2 border">{user.coins ?? "-"}</td>
-              <td className="px-4 py-2 border">
-                {user.createdAt?.toDate
-                  ? user.createdAt.toDate().toLocaleString()
-                  : "-"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-
-
-    Invites
-    <table className="min-w-full border border-gray-300 rounded-md">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 border">createdAt</th>
-            <th className="px-4 py-2 border">expiresAt</th>
-            <th className="px-4 py-2 border">email</th>
-            <th className="px-4 py-2 border">used</th>
-            <th className="px-4 py-2 border">usedAt</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Invites.map((invite) => (
-            <tr key={invite.email} className="text-center border-t">
-              <td className="px-4 py-2 border">
-                {invite.createdAt?.toDate
-                  ? invite.createdAt.toDate().toLocaleString()
-                  : "-"}
-              </td>
-              <td className="px-4 py-2 border">
-                {invite.expiresAt?.toDate
-                  ? invite.expiresAt.toDate().toLocaleString()
-                  : "-"}
-              </td>
-              <td className="px-4 py-2 border">{invite.email}</td>
-              <td className="px-4 py-2 border">{<td>{invite.used ? "✅" : "❌"}</td>}</td>
-
-              <td className="px-4 py-2 border">
-                {invite.usedAt
-                  ? invite.usedAt.toDate().toLocaleString()
-                  : "-"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
   );
-};
-
-export default Admin
+}
