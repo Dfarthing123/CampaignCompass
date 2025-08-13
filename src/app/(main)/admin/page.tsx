@@ -104,8 +104,15 @@ export default function AdminPage() {
 
     try {
       const functions = getFunctions(app);
-      const createInvite = httpsCallable(functions, "createInvite");
-      const result: any = await createInvite({ email });
+      //const createInvite = httpsCallable(functions, "createInvite"); V1
+      const createInvitev2 = httpsCallable(functions, "createInvitev2");
+
+      //const result: any = await createInvite({ email }); v1
+      const result: any = await createInvitev2({ 
+        email: email, 
+        campaign: "OU9kEiBzEjHHtLMzPdIC" 
+      });
+
       setInviteLink(result.data.inviteLink);
     } catch (err: any) {
       console.error("Invite error:", err);

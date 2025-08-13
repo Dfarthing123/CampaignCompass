@@ -41,9 +41,10 @@ const AcceptInvite: React.FC = () => {
 
     try {
       const functions = getFunctions(app);
-      const acceptInvite = httpsCallable(functions, "acceptInvite");
-
-      const result: any = await acceptInvite({ email, token, password });
+      //const acceptInvite = httpsCallable(functions, "acceptInvite"); // V1
+      const acceptInviteV2 = httpsCallable(functions, "acceptInviteV2");
+      //const result: any = await acceptInvite({ email, token, password }); // V1
+      const result: any = await acceptInviteV2({ email, token, password }); 
 
       if (result.data?.success) {
         // 1. Sign in the user to get auth context

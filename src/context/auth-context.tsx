@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, {
   createContext,
   useContext,
@@ -23,10 +24,12 @@ interface AuthContextType {
   user: User | null;
   role: string | null;
   loading: boolean;
+  selectedCampaignId: string | null;
+  setSelectedCampaignId: React.Dispatch<React.SetStateAction<string | null>>;
   signIn: (data: AuthFormValues) => Promise<any>;
   signUp: (data: AuthFormValues) => Promise<any>;
   signOut: () => Promise<void>;
-  resendVerificationEmail: (user: User) => Promise<void>; 
+  resendVerificationEmail: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,84 +38,105 @@ const resendVerificationEmail = async (user: User) => {
   await sendEmailVerification(user);
 };
 
-
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    setUser(user);
-
-    if (user) {
-      (async () => {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          setRole(userDoc.data().role || null);
-        } else {
-          setRole(null);
-        }
-        setLoading(false);
-      })();
-    } else {
-      setRole(null);
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-    }
-  });
+    });
 
-  return () => unsubscribe();
+    return () => unsubscribe();
+  }, []);
+
+
+  useEffect(() => {
+  // Load from localStorage when AuthProvider mounts
+  const storedCampaignId = localStorage.getItem("selectedCampaignId");
+  if (storedCampaignId) {
+    setSelectedCampaignId(storedCampaignId);
+  }
 }, []);
 
-  const signIn = async (data: AuthFormValues) => {
-  const userCredential = await signInWithEmailAndPassword(
-    auth,
-    data.email,
-    data.password
-  );
-  const user = userCredential.user;
+  useEffect(() => {
+    // Save to localStorage when campaign changes
+    if (selectedCampaignId) {
+      localStorage.setItem("selectedCampaignId", selectedCampaignId);
+      //router.push('/'); // Redirect to home if no user or campaign selected
+    } else {
+      localStorage.removeItem("selectedCampaignId");
+    }
+  }, [selectedCampaignId]);
 
-  if (!user.emailVerified) {
-    await firebaseSignOut(auth);
-    // Throw a custom error object
-    throw {
-      code: 'auth/email-not-verified',
-      message: 'Your email is not verified. Would you like us to resend the verification email?',
-      user, // include the user in case UI wants to resend from there
+  // Fetch role whenever user or selectedCampaignId changes
+  useEffect(() => {
+    if (!user || !selectedCampaignId) {
+      setRole(null);
+      
+      return;
+    }
+
+    const fetchRole = async () => {
+      try {
+        const docSnap = await getDoc(
+          doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
+        );
+        const newRole = docSnap.exists() ? docSnap.data().role || null : null;
+
+        // Only redirect if role actually changed
+        if (newRole && newRole !== role) {
+          setRole(newRole);
+          //router.push('/'); // force redirect to home
+        } else {
+          setRole(newRole);
+        }
+      } catch (error) {
+        console.error("Failed to fetch role:", error);
+        setRole(null);
+      }
     };
-  }
 
-  return userCredential;
-};
+    fetchRole();
+  }, [user, selectedCampaignId]);
 
-const signUp = async (data: AuthFormValues) => {
-  const userCredential = await createUserWithEmailAndPassword(
-    auth,
-    data.email,
-    data.password
-  );
-  const user = userCredential.user;
+  const signIn = async (data: AuthFormValues) => {
+    const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+    const user = userCredential.user;
 
+    if (!user.emailVerified) {
+      await firebaseSignOut(auth);
+      throw {
+        code: 'auth/email-not-verified',
+        message: 'Your email is not verified. Would you like us to resend the verification email?',
+        user,
+      };
+    }
 
-// Save user profile with role to Firestore
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-    email: user.email,
-    role: "user",  // default role, you can customize
-    status: "awaiting_approval"
-  });
-
-  // Send verification email using modular SDK
-  await sendEmailVerification(user);
-
-  // Sign out the user to prevent access until email is verified
-  await firebaseSignOut(auth);
-
-  return {
-    message: 'Verification email sent. Please check your inbox.',
+    return userCredential;
   };
-};
+
+  const signUp = async (data: AuthFormValues) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+    const user = userCredential.user;
+
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      email: user.email,
+      role: "user",
+      status: "awaiting_approval",
+    });
+
+    await sendEmailVerification(user);
+    await firebaseSignOut(auth);
+
+    return { message: 'Verification email sent. Please check your inbox.' };
+  };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
@@ -122,6 +146,8 @@ const signUp = async (data: AuthFormValues) => {
     user,
     role,
     loading,
+    selectedCampaignId,
+    setSelectedCampaignId,
     signIn,
     signUp,
     signOut,
@@ -137,8 +163,6 @@ const signUp = async (data: AuthFormValues) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

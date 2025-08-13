@@ -14,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignSwitcher } from "@/components/campaignswitcher";
+import { CampaignSelector } from "@/components/CampaignSelector";
 import { AudioWaveform, Command, Goal } from "lucide-react";
 import path from "path";
 
@@ -137,13 +139,15 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <Sidebar collapsible="icon" className="border-none pb-5 pt-3">
         <SidebarHeader>
-          <CampaignSwitcher teams={teams} />
+          {/* <CampaignSwitcher teams={teams} /> */}
+          <CampaignSelector />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
