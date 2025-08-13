@@ -34,53 +34,35 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const resendVerificationEmail = async (user: User) => {
-  await sendEmailVerification(user);
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const router = useRouter();
 
-  // Listen for auth state changes
+  // Restore from localStorage on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const storedCampaign = localStorage.getItem("selectedCampaignId");
+    const storedRole = localStorage.getItem("selectedCampaignRole");
+
+    if (storedCampaign) setSelectedCampaignId(storedCampaign);
+    if (storedRole) setRole(storedRole);
+  }, []);
+
+  // Auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-
+  // Fetch role when user or campaign changes
   useEffect(() => {
-  // Load from localStorage when AuthProvider mounts
-  const storedCampaignId = localStorage.getItem("selectedCampaignId");
-  if (storedCampaignId) {
-    setSelectedCampaignId(storedCampaignId);
-  }
-}, []);
-
-  useEffect(() => {
-    // Save to localStorage when campaign changes
-    if (selectedCampaignId) {
-      localStorage.setItem("selectedCampaignId", selectedCampaignId);
-      //router.push('/'); // Redirect to home if no user or campaign selected
-    } else {
-      localStorage.removeItem("selectedCampaignId");
-    }
-  }, [selectedCampaignId]);
-
-  // Fetch role whenever user or selectedCampaignId changes
-  useEffect(() => {
-    if (!user || !selectedCampaignId) {
-      setRole(null);
-      
-      return;
-    }
+    if (!user || !selectedCampaignId) return;
 
     const fetchRole = async () => {
       try {
@@ -89,32 +71,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
         const newRole = docSnap.exists() ? docSnap.data().role || null : null;
 
-        // Only redirect if role actually changed
-        if (newRole && newRole !== role) {
+        if (newRole !== role) {
           setRole(newRole);
-          //router.push('/'); // force redirect to home
-        } else {
-          setRole(newRole);
+          if (newRole) {
+            localStorage.setItem("selectedCampaignRole", newRole);
+          } else {
+            localStorage.removeItem("selectedCampaignRole");
+          }
+          router.push('/'); // redirect on role change
         }
       } catch (error) {
         console.error("Failed to fetch role:", error);
         setRole(null);
+        localStorage.removeItem("selectedCampaignRole");
       }
     };
 
     fetchRole();
   }, [user, selectedCampaignId]);
 
-  const signIn = async (data: AuthFormValues) => {
-    const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-    const user = userCredential.user;
+  // Persist campaign changes
+  useEffect(() => {
+    if (selectedCampaignId) {
+      localStorage.setItem("selectedCampaignId", selectedCampaignId);
+    } else {
+      localStorage.removeItem("selectedCampaignId");
+    }
+  }, [selectedCampaignId]);
 
-    if (!user.emailVerified) {
+  const signIn = async (data: AuthFormValues) => {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+    const signedInUser = userCredential.user;
+
+    if (!signedInUser.emailVerified) {
       await firebaseSignOut(auth);
       throw {
         code: 'auth/email-not-verified',
         message: 'Your email is not verified. Would you like us to resend the verification email?',
-        user,
+        user: signedInUser,
       };
     }
 
@@ -122,17 +120,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (data: AuthFormValues) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-    const user = userCredential.user;
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+    const newUser = userCredential.user;
 
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      email: user.email,
+    await setDoc(doc(db, "users", newUser.uid), {
+      uid: newUser.uid,
+      email: newUser.email,
       role: "user",
-      status: "awaiting_approval",
+      status: "awaiting_approval"
     });
 
-    await sendEmailVerification(user);
+    await sendEmailVerification(newUser);
     await firebaseSignOut(auth);
 
     return { message: 'Verification email sent. Please check your inbox.' };
@@ -140,6 +142,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    localStorage.removeItem("selectedCampaignId");
+    localStorage.removeItem("selectedCampaignRole");
+    setSelectedCampaignId(null);
+    setRole(null);
+  };
+
+  const resendVerificationEmail = async (user: User) => {
+    await sendEmailVerification(user);
   };
 
   const value = {
@@ -163,6 +173,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };

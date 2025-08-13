@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/tablepagination";
+import { useAuth } from "@/context/auth-context";
 
 interface User {
   id: string;
@@ -56,12 +57,14 @@ export default function AdminPage() {
     pageIndex: 0,
     pageSize: 20,
   });
+  const authUser = useAuth().user;
+  const { selectedCampaignId } = useAuth(); 
 
   // Fetch data when logged in
   useEffect(() => {
     const auth = getAuth(app);
     const db = getFirestore(app);
-
+    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) return;
 
@@ -110,7 +113,7 @@ export default function AdminPage() {
       //const result: any = await createInvite({ email }); v1
       const result: any = await createInvitev2({ 
         email: email, 
-        campaign: "OU9kEiBzEjHHtLMzPdIC" 
+        campaign: selectedCampaignId,// "OU9kEiBzEjHHtLMzPdIC" 
       });
 
       setInviteLink(result.data.inviteLink);
