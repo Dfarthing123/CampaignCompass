@@ -15,8 +15,6 @@ export default function Home() {
 
   const campaign = campaigns.find((c) => c.id === selectedCampaignId);
 
-  console.log(campaign);
-
   return (
     <div>
       <div className="mb-5">

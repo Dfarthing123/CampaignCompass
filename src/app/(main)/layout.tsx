@@ -14,23 +14,19 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
   ClipboardList,
   ContactRound,
-  Compass,
   Gauge,
   BookUser,
-  Target,
   Flag,
+  Command,
+  Goal,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CampaignSwitcher } from "@/components/campaignswitcher";
 import { CampaignSelector } from "@/components/CampaignSelector";
-import { AudioWaveform, Command, Goal } from "lucide-react";
-import path from "path";
 
 // Menu items.
 const items = [
@@ -159,7 +155,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <span className="text-xs text-muted-foreground px-5">v.0.0.1</span>
+          <span className="text-xs text-muted-foreground px-5 truncate">
+            v.0.0.1
+          </span>
         </SidebarFooter>
       </Sidebar>
       <main className="w-full mx-5 mt-2 mb-5 ">
