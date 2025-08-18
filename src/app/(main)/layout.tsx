@@ -24,6 +24,7 @@ import {
   Gauge,
   BookUser,
   Target,
+  Flag,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignSwitcher } from "@/components/campaignswitcher";
@@ -31,11 +32,13 @@ import { CampaignSelector } from "@/components/CampaignSelector";
 import { AudioWaveform, Command, Goal } from "lucide-react";
 import path from "path";
 
-
-
-
 // Menu items.
 const items = [
+  {
+    title: "Campaign",
+    url: "/",
+    icon: Flag,
+  },
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -58,11 +61,6 @@ const items = [
     icon: ContactRound,
   },
 ];
-
-
-
-
-
 
 const teams = [
   {
@@ -93,7 +91,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   };
   const menuItems = role === "admin" ? [...items, adminItem] : items;
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
     } else if (loading && user && role === "guest") {
@@ -109,20 +107,16 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     console.log(pathname);
   }, [pathname]);
 
-
   useEffect(() => {
-  const publicRoutes = ["/accept-invite"]; // add any other public routes here
-  const isPublicRoute = publicRoutes.includes(pathname);
+    const publicRoutes = ["/accept-invite"]; // add any other public routes here
+    const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (!loading && !user && !isPublicRoute) {
-    router.push("/signin");
-  } else if (loading && user && role === "guest" && !isPublicRoute) {
-    router.push("/signin");
-  }
-}, [user, loading, role, router]);
-
-
-  
+    if (!loading && !user && !isPublicRoute) {
+      router.push("/signin");
+    } else if (loading && user && role === "guest" && !isPublicRoute) {
+      router.push("/signin");
+    }
+  }, [user, loading, role, router]);
 
   if ((loading || !user) && !noLoaderRoutes.includes(pathname)) {
     return (
@@ -147,7 +141,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <SidebarGroupLabel>menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
