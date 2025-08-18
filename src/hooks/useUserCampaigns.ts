@@ -9,7 +9,7 @@ type Campaign = {
   [key: string]: any;
 };
 
-
+console.log("useUserCampaigns hook loaded");
 
 export function useUserCampaigns() {
   const { user } = useAuth();

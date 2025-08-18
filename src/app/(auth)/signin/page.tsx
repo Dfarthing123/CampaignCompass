@@ -156,10 +156,13 @@ const SignInPage = () => {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
+          Don't have an account? Contact your local representative to sign up.
+          {/** 
           Don’t have an account?
           <Button variant="link" asChild className="p-0 h-auto ms-2">
             <Link href="/signup">Sign up</Link>
           </Button>
+          */}
         </p>
       </CardFooter>
     </Card>
