@@ -24,6 +24,7 @@ import {
   Flag,
   Command,
   Goal,
+  Brain,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignSelector } from "@/components/CampaignSelector";
@@ -50,11 +51,15 @@ const items = [
     url: "/tasks",
     icon: ClipboardList,
   },
-
   {
     title: "Contacts",
     url: "/contacts",
     icon: ContactRound,
+  },
+  {
+    title: "Knowledge Base",
+    url: "/knowledgebase",
+    icon: Brain,
   },
 ];
 
