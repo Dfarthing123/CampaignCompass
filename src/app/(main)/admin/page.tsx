@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app } from "@/lib/firebase"; // Your Firebase client config
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import {
   ColumnDef,
   SortingState,
@@ -71,14 +72,18 @@ export default function AdminPage() {
       try {
         // Fetch users
         const usersQuery = query(
-          collection(db, "users"),
+          collection(db, "campaignUsers"),
           where("reportsTo", "==", user.uid)
         );
         const userDocs = await getDocs(usersQuery);
+        
         setUsers(
           userDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as User[]
         );
-
+      } catch (err) {
+        console.error("Error fetching team:", err);
+      }
+      try {
         // Fetch invites
         const invitesQuery = query(
           collection(db, "invites"),
@@ -92,7 +97,7 @@ export default function AdminPage() {
           })) as Invite[]
         );
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching invites:" , err);
       }
     });
 
@@ -140,6 +145,9 @@ export default function AdminPage() {
           : "-",
     },
   ];
+
+
+
 
   // Table columns for Invites
   const inviteColumns: ColumnDef<Invite>[] = [
@@ -256,17 +264,26 @@ export default function AdminPage() {
         {loading ? "Sending..." : "Create Invite"}
       </button>
       {inviteLink && (
-        <div className="mt-4 text-green-700">
-          Invite Link:{" "}
-          <a
-            href={inviteLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-blue-700"
-          >
-            {inviteLink}
-          </a>
-        </div>
+        <>
+          <div className="mt-4 text-green-700">
+            Invite Link:{" "}
+            <a
+              href={inviteLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-blue-700"
+            >
+              {inviteLink}
+            </a>
+          
+          
+          </div>
+          <div className="p-2">
+              <h2 className="text-l font-semibold mb-4">Or Scan this code.</h2>
+
+              <QRCodeSVG value={inviteLink} size={300} />
+          </div>
+        </>
       )}
       {error && (
         <div className="mt-4 text-red-600 font-medium">⚠️ {error}</div>

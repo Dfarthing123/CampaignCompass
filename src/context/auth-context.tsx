@@ -63,9 +63,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch role when user or campaign changes
   useEffect(() => {
     if (!user || !selectedCampaignId) return;
-
+      
     const fetchRole = async () => {
       try {
+
+        console.log("verified", user.emailVerified)
+        
+
         const docSnap = await getDoc(
           doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
         );
@@ -105,16 +109,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       data.email,
       data.password
     );
-    const signedInUser = userCredential.user;
+    //const signedInUser = userCredential.user;
 
-    if (!signedInUser.emailVerified) {
+    if (userCredential.user.emailVerified) {
+      // Proceed to app
+      console.log("Sign-in successful and email verified!");
+    } else {
+      // Logout immediately
+      await auth.signOut();
+      throw {
+        code: 'auth/email-not-verified',
+        message: 'Your email is not verified. Would you like us to resend the verification email?',
+        user: userCredential,
+      };
+    }
+
+
+    /* if (!signedInUser.emailVerified) {
       await firebaseSignOut(auth);
       throw {
         code: 'auth/email-not-verified',
         message: 'Your email is not verified. Would you like us to resend the verification email?',
         user: signedInUser,
       };
-    }
+    } */
 
     return userCredential;
   };
@@ -132,6 +150,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: newUser.email,
       role: "user",
       status: "awaiting_approval"
+    });
+
+
+    await setDoc(doc(db, "CampaignUsers", newUser.uid), {
+      uid: newUser.uid,
+      email: newUser.email,
+      role: "user",
+      status: "Pending"
     });
 
     await sendEmailVerification(newUser);
