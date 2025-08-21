@@ -1,45 +1,64 @@
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Brain, Plus } from "lucide-react";
+"use client";
+
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { Brain } from "lucide-react";
+import React from "react";
+import { useEffect, useState } from "react";
+
+type KnowledgeItem = {
+  id: string;
+  title: string;
+  data: string;
+};
 
 const page = () => {
+  const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>();
+  const [loading, setLoading] = useState(true);
+
+  const knowledgeItemId = window.location.href.split("/")[4];
+
+  useEffect(() => {
+    const fetchKnowledgebaseItem = async () => {
+      try {
+        const ref = doc(db, "KnowledgeBase", knowledgeItemId);
+        const snapshot = await getDoc(ref);
+
+        if (snapshot.exists()) {
+          const knowledgeItemContent = JSON.parse(snapshot.data().data);
+
+          setKnowledgeItem({
+            id: snapshot.id,
+            title: knowledgeItemContent.title,
+            data: knowledgeItemContent.sections[0].content,
+          } as KnowledgeItem);
+        } else {
+          setKnowledgeItem(null);
+        }
+        console.log(knowledgeItem);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchKnowledgebaseItem();
+  }, [knowledgeItemId, loading]);
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-5">
-        <div className="flex justify-start gap-3">
-          <Brain />
-          <h1 className="font-medium">Knowledge Item</h1>
-        </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              <Plus />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle className="mb-4">Knowledge Item</SheetTitle>
-              <SheetDescription asChild>
-                <div>
-                  <p className="text-center text-muted-foreground text-sm">
-                    Fields
-                  </p>
-                  <p className="text-center font-medium text-primary mt-1 break-all"></p>
-                </div>
-              </SheetDescription>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
+      <div className="flex flex-row justify-start gap-2 items-center mb-5">
+        <Brain />
+        <p className="font-medium text-lg">{knowledgeItem?.title}</p>
       </div>
-
-      <div></div>
+      <div>
+        {knowledgeItem?.data.split("\n").map((line, index) => (
+          <p key={index} className="mb-3">
+            {line}
+          </p>
+        ))}
+      </div>
     </div>
   );
 };
