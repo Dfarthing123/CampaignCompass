@@ -54,8 +54,10 @@ const AcceptInvite: React.FC = () => {
         // 2. Send verification email
         await sendEmailVerification(userCredential.user);
 
+        await auth.signOut(); // Sign out after sending verification email --needs to be changed to perfrom logic serverside in accept function
+
         setStatus("success");
-        setMessage("🎉 Account created! You can now log in.");
+        setMessage("Account created! please check your inbox for your email verification link");
       } else {
         throw new Error("Unknown error.");
       }
