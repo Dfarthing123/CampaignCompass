@@ -103,6 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedCampaignId]);
 
+
+
   const signIn = async (data: AuthFormValues) => {
     const userCredential = await signInWithEmailAndPassword(
       auth,

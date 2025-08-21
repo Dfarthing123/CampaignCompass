@@ -9,12 +9,12 @@ import {
   signInWithEmailAndPassword,
   sendEmailVerification
 } from 'firebase/auth';
-
+import { useAuth } from "@/context/auth-context";
 
 const AcceptInvite: React.FC = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-
+  const { selectedCampaignId } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");

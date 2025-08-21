@@ -73,7 +73,8 @@ export default function AdminPage() {
         // Fetch users
         const usersQuery = query(
           collection(db, "campaignUsers"),
-          where("reportsTo", "==", user.uid)
+          where("reportsTo", "==", user.uid),
+          where("campaignId", "==", selectedCampaignId)
         );
         const userDocs = await getDocs(usersQuery);
         
@@ -87,7 +88,8 @@ export default function AdminPage() {
         // Fetch invites
         const invitesQuery = query(
           collection(db, "invites"),
-          where("createdBy", "==", user.uid)
+          where("createdBy", "==", user.uid),
+          where("campaign", "==", selectedCampaignId)
         );
         const inviteDocs = await getDocs(invitesQuery);
         setInvites(
@@ -102,7 +104,7 @@ export default function AdminPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedCampaignId]);
 
   // Send invite
   const handleSendInvite = async () => {
@@ -248,6 +250,7 @@ export default function AdminPage() {
 
   return (
     <div className="p-6">
+
       <h2 className="text-xl font-semibold mb-4">Send Invite</h2>
       <input
         type="email"
