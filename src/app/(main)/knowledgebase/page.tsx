@@ -1,20 +1,11 @@
 "use client";
 
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { db } from "@/lib/firebase";
 import { getDocs, collection } from "firebase/firestore";
-import { Brain, ClipboardList, Plus } from "lucide-react";
+import { Brain } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { columns } from "./columns";
 import { DataTable } from "./datatable";
-import { Button } from "@/components/ui/button";
 
 type KnowledgeItem = {
   id: string;
