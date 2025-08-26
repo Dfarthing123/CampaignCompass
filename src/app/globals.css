@@ -96,3 +96,46 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.markdown-preview h1,
+.editor-preview-full h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+}
+
+.markdown-preview h2,
+.editor-preview-full h2 {
+  font-size: 1.5rem;
+  margin-top: 1.2rem;
+}
+
+.markdown-preview p,
+.editor-preview-full p {
+  line-height: 1.7;
+  margin-bottom: 1em;
+}
+
+.markdown-preview ul,
+.editor-preview-full ul {
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.markdown-preview ol,
+.editor-preview-full ol {
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+
+.markdown-preview a,
+.editor-preview-full a {
+  color: #0070f3;
+  text-decoration: underline;
+}
+
+.CodeMirror,
+.CodeMirror-scroll {
+  height: calc(100vh - 300px) !important;
+  overflow-y: scroll;
+}

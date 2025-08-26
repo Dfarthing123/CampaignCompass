@@ -10,7 +10,7 @@ export type KnowledgeItem = {
 export const columns: ColumnDef<KnowledgeItem>[] = [
   {
     accessorKey: "title",
-    header: "Knowledge Item",
+    header: "Title",
     cell: ({ row }) => {
       const title = row.getValue("title");
       return <span className="uppercase"> {title as string} </span>;
