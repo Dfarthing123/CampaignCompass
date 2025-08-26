@@ -1,19 +1,28 @@
 "use client";
 
+import MarkdownEditor, {
+  MarkdownEditorHandle,
+} from "@/components/MarkdownEditor";
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Brain } from "lucide-react";
-import React from "react";
+import React, { useRef } from "react";
 import { useEffect, useState } from "react";
+import hardenReactMarkdown from "harden-react-markdown";
+import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/context/auth-context";
+import { Button } from "@/components/ui/button";
 
-type KnowledgeItem = {
-  id: string;
-  title: string;
-  data: string;
-};
+const HardenedMarkdown = hardenReactMarkdown(ReactMarkdown);
 
 const page = () => {
-  const [knowledgeItem, setKnowledgeItem] = useState<KnowledgeItem | null>();
+  const { user, role } = useAuth();
+  const [title, setTitle] = useState("");
+  const [markdown, setMarkdown] = useState("");
+  const [unsavedMarkdown, setUnsavedMarkdown] = useState("");
+
+  const editorRef = useRef<MarkdownEditorHandle>(null);
+
   const [loading, setLoading] = useState(true);
 
   const knowledgeItemId = window.location.href.split("/")[4];
@@ -27,18 +36,15 @@ const page = () => {
         if (snapshot.exists()) {
           const knowledgeItemContent = JSON.parse(snapshot.data().data);
 
-          setKnowledgeItem({
-            id: snapshot.id,
-            title: knowledgeItemContent.title,
-            data: knowledgeItemContent.sections[0].content,
-          } as KnowledgeItem);
+          setTitle(knowledgeItemContent.title);
+
+          setMarkdown(knowledgeItemContent.markdown);
         } else {
-          setKnowledgeItem(null);
         }
-        console.log(knowledgeItem);
+
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching tasks:", error);
+        console.error("Error fetching knowledge item:", error);
         setLoading(false);
       }
     };
@@ -46,19 +52,56 @@ const page = () => {
     fetchKnowledgebaseItem();
   }, [knowledgeItemId, loading]);
 
+  const handleSave = async () => {
+    const currentMarkdown = editorRef.current?.getValue() ?? "";
+
+    try {
+      // Save to existing Firestore document
+      await setDoc(
+        doc(db, "KnowledgeBase", knowledgeItemId),
+        {
+          data: JSON.stringify({
+            title: title,
+            markdown: currentMarkdown,
+          }),
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      );
+
+      alert("Markdown saved to existing doc!");
+    } catch (error) {
+      console.error("Error saving:", error);
+      alert("Error saving to Firebase.");
+    }
+  };
+
   return (
     <div>
       <div className="flex flex-row justify-start gap-2 items-center mb-5">
         <Brain />
-        <p className="font-medium text-lg">{knowledgeItem?.title}</p>
+        <p className="font-medium text-lg">{title}</p>
       </div>
-      <div>
-        {knowledgeItem?.data.split("\n").map((line, index) => (
-          <p key={index} className="mb-3">
-            {line}
-          </p>
-        ))}
-      </div>
+
+      {role != "admin" ? (
+        <div className="markdown-preview bg-neutral-50 border rounded-lg p-2">
+          <HardenedMarkdown
+          //defaultOrigin="https://yourdomain.com"
+          // allowedLinkPrefixes={[
+          //   "https://github.com/",
+          //   "https://yourdomain.com/docs/",
+          // ]}
+          //allowedImagePrefixes={["https://via.placeholder.com/", "/images/"]}
+          >
+            {markdown}
+          </HardenedMarkdown>
+        </div>
+      ) : (
+        <div>
+          <MarkdownEditor ref={editorRef} value={markdown} />
+          <Button onClick={handleSave}>Save</Button>
+        </div>
+      )}
     </div>
   );
 };
