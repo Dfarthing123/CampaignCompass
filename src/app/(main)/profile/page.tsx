@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const page = () => {
-  const { user, loading,role } = useAuth();
+  const { user, loading,role,status } = useAuth();
 
   const router = useRouter();
 
@@ -76,6 +76,7 @@ const page = () => {
             <div className="w-full">
               <CustomUsername sizeClass="font-bold text-lg" />
               <p className="font-medium">Role: {role}</p>
+              <p className="font-medium">Status: {status}</p>
               <p className="font-medium">Team Administrator</p>
               <p className="font-medium">Party A</p>
               <p className="font-medium">

@@ -23,6 +23,7 @@ import type { AuthFormValues } from '@/types';
 interface AuthContextType {
   user: User | null;
   role: string | null;
+  status: string | null;
   loading: boolean;
   selectedCampaignId: string | null;
   setSelectedCampaignId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -37,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const router = useRouter();
@@ -44,10 +46,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Restore from localStorage on mount
   useEffect(() => {
     const storedCampaign = localStorage.getItem("selectedCampaignId");
-    const storedRole = localStorage.getItem("selectedCampaignRole");
 
     if (storedCampaign) setSelectedCampaignId(storedCampaign);
-    if (storedRole) setRole(storedRole);
+
   }, []);
 
   // Auth state listener
@@ -64,34 +65,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user || !selectedCampaignId) return;
       
-    const fetchRole = async () => {
-      try {
+      const fetchUserData = async () => {
+        try {
+          const docSnap = await getDoc(
+            doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
+          );
 
-        console.log("verified", user.emailVerified)
-        
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setStatus(data.status || null);
+            setRole(data.role || null);
 
-        const docSnap = await getDoc(
-          doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
-        );
-        const newRole = docSnap.exists() ? docSnap.data().role || null : null;
-
-        if (newRole !== role) {
-          setRole(newRole);
-          if (newRole) {
-            localStorage.setItem("selectedCampaignRole", newRole);
+            if (data.status === "Screening") {
+              router.push("/screening");
+            }
           } else {
-            localStorage.removeItem("selectedCampaignRole");
+            setRole(null);
+            setStatus(null);
           }
-          router.push('/'); // redirect on role change
+        } catch (error) {
+          console.error("Failed to fetch user role/status:", error);
+          setRole(null);
+          setStatus(null);
         }
-      } catch (error) {
-        console.error("Failed to fetch role:", error);
-        setRole(null);
-        localStorage.removeItem("selectedCampaignRole");
-      }
-    };
+      };
 
-    fetchRole();
+
+    fetchUserData();
   }, [user, selectedCampaignId]);
 
   // Persist campaign changes
@@ -113,6 +113,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
     //const signedInUser = userCredential.user;
 
+    const storedCampaign = localStorage.getItem("selectedCampaignId");
+
+    if (storedCampaign) setSelectedCampaignId(storedCampaign);
+
     if (userCredential.user.emailVerified) {
       // Proceed to app
       console.log("Sign-in successful and email verified!");
@@ -125,16 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: userCredential,
       };
     }
-
-
-    /* if (!signedInUser.emailVerified) {
-      await firebaseSignOut(auth);
-      throw {
-        code: 'auth/email-not-verified',
-        message: 'Your email is not verified. Would you like us to resend the verification email?',
-        user: signedInUser,
-      };
-    } */
 
     return userCredential;
   };
@@ -159,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       uid: newUser.uid,
       email: newUser.email,
       role: "user",
-      status: "Pending"
+      status: "Screening"
     });
 
     await sendEmailVerification(newUser);
@@ -171,7 +165,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await firebaseSignOut(auth);
     localStorage.removeItem("selectedCampaignId");
-    localStorage.removeItem("selectedCampaignRole");
+/*     localStorage.removeItem("selectedCampaignRole");
+    localStorage.removeItem("selectedCampaignStatus"); */
     setSelectedCampaignId(null);
     setRole(null);
   };
@@ -183,6 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     user,
     role,
+    status,
     loading,
     selectedCampaignId,
     setSelectedCampaignId,
