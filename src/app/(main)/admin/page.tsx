@@ -57,7 +57,9 @@ export default function AdminPage() {
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
-  const [expanded, setExpanded] = useState({});
+  //const [expanded, setExpanded] = useState({});
+  const [expandedUsers, setExpandedUsers] = useState({});
+  const [expandedInvites, setExpandedInvites] = useState({});
 
   const authUser = useAuth().user;
   const { selectedCampaignId } = useAuth();
@@ -195,19 +197,22 @@ export default function AdminPage() {
   ];
 
   // Generic DataTable
-  function DataTable<TData, TValue>({ columns, data }: { columns: ColumnDef<TData, TValue>[]; data: TData[] }) {
+  function DataTable<TData, TValue>({ columns, data ,name}: { columns: ColumnDef<TData, TValue>[]; data: TData[] ,name?:string}) {
+    const isUsersTable = name === "userstbl";
     const table = useReactTable({
       data,
       columns,
+      
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getExpandedRowModel: getExpandedRowModel(),
-      state: { sorting, pagination, expanded },
+      state: { sorting, pagination, expanded: isUsersTable ? expandedUsers : expandedInvites },
       onSortingChange: setSorting,
       onPaginationChange: setPagination,
-      onExpandedChange: setExpanded,
+      onExpandedChange: isUsersTable ? setExpandedUsers : setExpandedInvites,
       getRowCanExpand: () => true,
+      
     });
 
     return (
@@ -233,7 +238,7 @@ export default function AdminPage() {
                       <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                     ))}
                   </TableRow>
-                  {row.getIsExpanded() && selectedCampaignId && (
+                  {name == 'userstbl' && row.getIsExpanded() && selectedCampaignId &&  (
                     <TableRow key={row.id + "-expanded"}>
                       <TableCell colSpan={columns.length}>
                         <ExpandedRow user={row.original as User} campaignId={selectedCampaignId} onApprove={handleUserApproved} />
@@ -289,11 +294,11 @@ export default function AdminPage() {
 
       {/* Users table */}
       <h3 className="mt-10 text-lg font-bold">My Team</h3>
-      <DataTable columns={userColumns} data={users} />
+      <DataTable columns={userColumns} data={users} name="userstbl"/>
 
       {/* Invites table */}
       <h3 className="mt-10 text-lg font-bold">Invites</h3>
-      <DataTable columns={inviteColumns} data={invites} />
+      <DataTable columns={inviteColumns} data={invites} name="invitestbl" />
     </div>
   );
 }
