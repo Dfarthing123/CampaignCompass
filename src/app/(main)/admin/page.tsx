@@ -126,8 +126,9 @@ export default function AdminPage() {
 
 
   function handleUserApproved(userId: string) {
+    const value = users.find((u) => u.id === userId)?.status === "Approved" ? "Screening" : "Approved";
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, status: "Approved" } : u))
+      prev.map((u) => (u.id === userId ? { ...u, status: value } : u))
     );
   }
 
