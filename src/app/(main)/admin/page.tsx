@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, Fragment,memo } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "@/lib/firebase"; // Your Firebase client config
-import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
+import { app } from "@/lib/firebase";
+import { QRCodeSVG } from "qrcode.react";
 import {
   ColumnDef,
   SortingState,
@@ -13,6 +13,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -24,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import ExpandedRow from "@/components/forms/approveMember";
 import { DataTablePagination } from "@/components/tablepagination";
 import { useAuth } from "@/context/auth-context";
 
@@ -54,52 +56,44 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 20,
-  });
-  const authUser = useAuth().user;
-  const { selectedCampaignId } = useAuth(); 
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
+  const [expanded, setExpanded] = useState({});
 
-  // Fetch data when logged in
+  const authUser = useAuth().user;
+  const { selectedCampaignId } = useAuth();
+
+  // Fetch data
   useEffect(() => {
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
+      if (!user || !selectedCampaignId) return;
 
       try {
-        // Fetch users
+        // Users
         const usersQuery = query(
           collection(db, "campaignUsers"),
           where("reportsTo", "==", user.uid),
           where("campaignId", "==", selectedCampaignId)
         );
         const userDocs = await getDocs(usersQuery);
-        
-        setUsers(
-          userDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as User[]
-        );
+        setUsers(userDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as User[]);
       } catch (err) {
         console.error("Error fetching team:", err);
       }
+
       try {
-        // Fetch invites
+        // Invites
         const invitesQuery = query(
           collection(db, "invites"),
           where("createdBy", "==", user.uid),
           where("campaign", "==", selectedCampaignId)
         );
         const inviteDocs = await getDocs(invitesQuery);
-        setInvites(
-          inviteDocs.docs.map((doc) => ({
-            email: doc.id,
-            ...doc.data(),
-          })) as Invite[]
-        );
+        setInvites(inviteDocs.docs.map((doc) => ({ email: doc.id, ...doc.data() })) as Invite[]);
       } catch (err) {
-        console.error("Error fetching invites:" , err);
+        console.error("Error fetching invites:", err);
       }
     });
 
@@ -114,13 +108,11 @@ export default function AdminPage() {
 
     try {
       const functions = getFunctions(app);
-      //const createInvite = httpsCallable(functions, "createInvite"); V1
       const createInvitev2 = httpsCallable(functions, "createInvitev2");
 
-      //const result: any = await createInvite({ email }); v1
-      const result: any = await createInvitev2({ 
-        email: email, 
-        campaign: selectedCampaignId,// "OU9kEiBzEjHHtLMzPdIC" 
+      const result: any = await createInvitev2({
+        email,
+        campaign: selectedCampaignId,
       });
 
       setInviteLink(result.data.inviteLink);
@@ -132,7 +124,16 @@ export default function AdminPage() {
     }
   };
 
-  // Table columns for Users
+
+  function handleUserApproved(userId: string) {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, status: "approved" } : u))
+    );
+  }
+
+
+
+  // Users table columns
   const userColumns: ColumnDef<User>[] = [
     { accessorKey: "status", header: "Status" },
     { accessorKey: "email", header: "Email" },
@@ -146,12 +147,19 @@ export default function AdminPage() {
           ? row.original.createdAt.toDate().toLocaleString()
           : "-",
     },
+    {
+      id: "expander",
+      header: () => null,
+      cell: ({ row }) =>
+        row.getCanExpand() ? (
+          <button onClick={row.getToggleExpandedHandler()} className="text-blue-600 underline">
+            {row.getIsExpanded() ? "▼" : "▶"}
+          </button>
+        ) : null,
+    },
   ];
 
-
-
-
-  // Table columns for Invites
+  // Invites table columns
   const inviteColumns: ColumnDef<Invite>[] = [
     {
       accessorKey: "createdAt",
@@ -185,23 +193,20 @@ export default function AdminPage() {
     },
   ];
 
-  // Reusable DataTable component
-  function DataTable<TData, TValue>({
-    columns,
-    data,
-  }: {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-  }) {
+  // Generic DataTable
+  function DataTable<TData, TValue>({ columns, data }: { columns: ColumnDef<TData, TValue>[]; data: TData[] }) {
     const table = useReactTable({
       data,
       columns,
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
-      onSortingChange: setSorting,
       getSortedRowModel: getSortedRowModel(),
+      getExpandedRowModel: getExpandedRowModel(),
+      state: { sorting, pagination, expanded },
+      onSortingChange: setSorting,
       onPaginationChange: setPagination,
-      state: { sorting, pagination },
+      onExpandedChange: setExpanded,
+      getRowCanExpand: () => true,
     });
 
     return (
@@ -212,27 +217,29 @@ export default function AdminPage() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <Fragment key={row.id}>
+                  <TableRow>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    ))}
+                  </TableRow>
+                  {row.getIsExpanded() && selectedCampaignId && (
+                    <TableRow key={row.id + "-expanded"}>
+                      <TableCell colSpan={columns.length}>
+                        <ExpandedRow user={row.original as User} campaignId={selectedCampaignId} onApprove={handleUserApproved} />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
               ))
             ) : (
               <TableRow>
@@ -250,7 +257,7 @@ export default function AdminPage() {
 
   return (
     <div className="p-6">
-
+      {/* Invite section */}
       <h2 className="text-xl font-semibold mb-4">Send Invite</h2>
       <input
         type="email"
@@ -267,34 +274,23 @@ export default function AdminPage() {
         {loading ? "Sending..." : "Create Invite"}
       </button>
       {inviteLink && (
-        <>
-          <div className="mt-4 text-green-700">
+        <div className="mt-4">
+          <div className="text-green-700 mb-2">
             Invite Link:{" "}
-            <a
-              href={inviteLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-blue-700"
-            >
+            <a href={inviteLink} target="_blank" rel="noopener noreferrer" className="underline text-blue-700">
               {inviteLink}
             </a>
-          
-          
           </div>
-          <div className="p-2">
-              <h2 className="text-l font-semibold mb-4">Or Scan this code.</h2>
-
-              <QRCodeSVG value={inviteLink} size={300} />
-          </div>
-        </>
+          <QRCodeSVG value={inviteLink} size={300} />
+        </div>
       )}
-      {error && (
-        <div className="mt-4 text-red-600 font-medium">⚠️ {error}</div>
-      )}
+      {error && <div className="mt-4 text-red-600 font-medium">⚠️ {error}</div>}
 
+      {/* Users table */}
       <h3 className="mt-10 text-lg font-bold">My Team</h3>
       <DataTable columns={userColumns} data={users} />
 
+      {/* Invites table */}
       <h3 className="mt-10 text-lg font-bold">Invites</h3>
       <DataTable columns={inviteColumns} data={invites} />
     </div>
