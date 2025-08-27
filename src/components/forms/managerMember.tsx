@@ -49,7 +49,7 @@ function ExpandedRow({ user, campaignId , onApprove}: { user: User; campaignId: 
     try {
       await setDoc(doc(db, "campaignUsers", `${user.id}`), {
         ...user,
-        status: "approved",
+        status: "Approved",
       }, { merge: true });
       //alert("User approved!");
 

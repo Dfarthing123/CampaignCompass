@@ -25,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import ExpandedRow from "@/components/forms/approveMember";
+import ExpandedRow from "@/components/forms/managerMember";
 import { DataTablePagination } from "@/components/tablepagination";
 import { useAuth } from "@/context/auth-context";
 
@@ -127,7 +127,7 @@ export default function AdminPage() {
 
   function handleUserApproved(userId: string) {
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, status: "approved" } : u))
+      prev.map((u) => (u.id === userId ? { ...u, status: "Approved" } : u))
     );
   }
 
