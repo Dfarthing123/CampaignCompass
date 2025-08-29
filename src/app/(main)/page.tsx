@@ -8,8 +8,6 @@ import { useAuth } from "@/context/auth-context";
 import { useUserCampaigns } from "@/hooks/useUserCampaigns";
 
 export default function Home() {
-  const AVATAR_URI = "https://untitledui.com/images/avatars/jonathan-kelly";
-
   const { selectedCampaignId, setSelectedCampaignId } = useAuth();
   const { campaigns, loading } = useUserCampaigns();
 

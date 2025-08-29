@@ -9,15 +9,15 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-col gap-4 p-6 md:p-10 w-auto">
           <div className="flex justify-center gap-2 md:justify-start">
             <a href="/" className="flex items-center gap-2 font-medium">
-              <div className="bg-primary text-primary-foreground flex size-8  items-center justify-center rounded-md">
-                <Compass className="size-5" />
-              </div>
-              Campaign Compass v0.0.1
+              <Compass className="size-5" />
+              WIN PC APP
             </a>
           </div>
           <div className="flex flex-1 items-center justify-center ">
             {children}
           </div>
+
+          <p className="text-xs text-accent">WIN PC APP v0.0.1 Terms Privacy</p>
         </div>
         <div className="bg-muted relative hidden lg:block">
           <img

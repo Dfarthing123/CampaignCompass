@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import ScreeningModal from "@/components/forms/screeningResponses";
+import { Button } from "../ui/button";
+import { toast, useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -19,7 +21,11 @@ interface ExpandedRowProps {
   onApprove: (id: string) => void;
 }
 
-export default function ExpandedRow({ user, campaignId, onApprove }: ExpandedRowProps) {
+export default function ExpandedRow({
+  user,
+  campaignId,
+  onApprove,
+}: ExpandedRowProps) {
   const [hasResponse, setHasResponse] = useState(false);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<{ [key: string]: string }>({});
@@ -75,12 +81,16 @@ export default function ExpandedRow({ user, campaignId, onApprove }: ExpandedRow
         { merge: true }
       );
       onApprove(user.id);
+      toast({
+        title: "Success!",
+        description: "Team memeber has been approved.",
+      });
     } catch (err) {
       console.error("Approval failed:", err);
     }
   };
 
-    const handleDispprove = async () => {
+  const handleDispprove = async () => {
     const db = getFirestore(app);
     try {
       await setDoc(
@@ -89,43 +99,41 @@ export default function ExpandedRow({ user, campaignId, onApprove }: ExpandedRow
         { merge: true }
       );
       onApprove(user.id);
+      toast({
+        title: "Success!",
+        description: "Team memeber has been rejected.",
+      });
     } catch (err) {
       console.error("Approval failed:", err);
     }
   };
 
-
-
-
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex flex-row justify-center font-medium p-3">
+        Loading...
+      </div>
+    );
 
   return (
-    <div className="p-2 space-y-2">
+    <div className="flex flex-row justify-center gap-4 p-3">
       {hasResponse ? (
         <>
-          <button
-            onClick={handleApprove}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Approve User
-          </button>
-
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ml-2"
           >
-            View Screening
-          </button>
+            Review Screening Answers
+          </Button>
 
-          <button
-            onClick={handleDispprove}
-            className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 ml-2"
-          >
-            Dispprove User
-          </button>
+          <Button onClick={handleApprove} size="sm">
+            Approve
+          </Button>
 
-
-
+          <Button variant="destructive" size="sm" onClick={handleDispprove}>
+            Reject
+          </Button>
 
           <ScreeningModal
             isOpen={modalOpen}
@@ -135,7 +143,9 @@ export default function ExpandedRow({ user, campaignId, onApprove }: ExpandedRow
           />
         </>
       ) : (
-        <p>No screening response yet.</p>
+        <p className="flex flex-row justify-center font-medium p-3">
+          Awaiting screening answers.
+        </p>
       )}
     </div>
   );

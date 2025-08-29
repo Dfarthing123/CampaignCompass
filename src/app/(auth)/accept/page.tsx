@@ -3,13 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import {app} from "@/lib/firebase"; // your initialized Firebase app
+import { app, db } from "@/lib/firebase"; // your initialized Firebase app
 import {
   getAuth,
   signInWithEmailAndPassword,
-  sendEmailVerification
-} from 'firebase/auth';
+  sendEmailVerification,
+} from "firebase/auth";
 import { useAuth } from "@/context/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PartyPopper } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+
+type Campaign = {
+  id: string;
+  name?: string; // add other fields your campaign has
+  [key: string]: any;
+};
 
 const AcceptInvite: React.FC = () => {
   const searchParams = useSearchParams();
@@ -17,8 +27,31 @@ const AcceptInvite: React.FC = () => {
   const { selectedCampaignId } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+
+  useEffect(() => {
+    const loadCampaign = async () => {
+      try {
+        // Get all campaignUsers docs for this user
+        const docRef = doc(db, "campaigns", selectedCampaignId as string);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setCampaign(docSnap.data() as Campaign);
+        } else {
+          console.log("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching document:", error);
+      } finally {
+        //setLoading(false);
+      }
+    };
+    loadCampaign();
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -44,12 +77,16 @@ const AcceptInvite: React.FC = () => {
       //const acceptInvite = httpsCallable(functions, "acceptInvite"); // V1
       const acceptInviteV2 = httpsCallable(functions, "acceptInviteV2");
       //const result: any = await acceptInvite({ email, token, password }); // V1
-      const result: any = await acceptInviteV2({ email, token, password }); 
+      const result: any = await acceptInviteV2({ email, token, password });
 
       if (result.data?.success) {
         // 1. Sign in the user to get auth context
         const auth = getAuth(app);
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
         // 2. Send verification email
         await sendEmailVerification(userCredential.user);
@@ -57,7 +94,9 @@ const AcceptInvite: React.FC = () => {
         await auth.signOut(); // Sign out after sending verification email --needs to be changed to perfrom logic serverside in accept function
 
         setStatus("success");
-        setMessage("Account created! please check your inbox for your email verification link");
+        setMessage(
+          "Account created! please check your inbox for your email verification link"
+        );
       } else {
         throw new Error("Unknown error.");
       }
@@ -69,37 +108,43 @@ const AcceptInvite: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-12 p-6 border rounded-xl shadow bg-white">
-      <h2 className="text-2xl font-bold mb-4">Accept Your Invite</h2>
+    <div className="max-w-md mx-auto mt-12 p-6 border rounded-xl bg-white">
+      <p className="font-medium text-xl">
+        You have been invited to join {campaign?.Candidate}'s campaign.
+      </p>
+      <p className="my-5">
+        To accept your invitation, please enter the email address where you
+        received the invite and create a password.
+      </p>
 
       {status === "success" ? (
-        <p className="text-green-600">{message}</p>
+        <p className="flex flex-row gap-3 font-medium text-xl">
+          <PartyPopper /> {message}
+        </p>
       ) : (
         <form onSubmit={handleAcceptInvite} className="space-y-4">
-          <input
+          <Input
             type="email"
             placeholder="Your invited email"
-            className="w-full border p-2 rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <input
+          <Input
             type="password"
             placeholder="Choose a password"
-            className="w-full border p-2 rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button
+          <Button
             type="submit"
             disabled={status === "submitting"}
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full"
           >
             {status === "submitting" ? "Processing..." : "Accept Invite"}
-          </button>
-          {message && <p className="text-red-600">{message}</p>}
+          </Button>
+          {message && <p className="text-destructive">ERROR: {message}</p>}
         </form>
       )}
     </div>

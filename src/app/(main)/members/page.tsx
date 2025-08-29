@@ -1,28 +1,49 @@
-import InviteForm from "@/components/forms/invite";
+"use client";
+
 import { DataTable } from "./datatable";
 import { columns, TeamMember } from "./columns";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { BookUser, Plus } from "lucide-react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/context/auth-context";
+import { BookUser } from "lucide-react";
+//import { onAuthStateChanged } from "firebase/auth";
 
-const getData = async (): Promise<TeamMember[]> => {
-  const users = Array.from({ length: 1 }, (_, i) => ({
-    id: (i + 1).toString(),
-    username: `NewtNavy${i + 1}`,
-  }));
+const page = () => {
+  const { user, selectedCampaignId } = useAuth();
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  return users;
-};
+  useEffect(() => {
+    //const unsubscribe = onAuthStateChanged(useAuth, async (user) => {
+    if (!user || !selectedCampaignId) return;
 
-const page = async () => {
-  const data = await getData();
+    const fetchTeam = async () => {
+      try {
+        const teamQuery = query(
+          collection(db, "campaignUsers"),
+          where("reportsTo", "==", user?.uid),
+          where("campaignId", "==", selectedCampaignId)
+        );
+        const userDocs = await getDocs(teamQuery);
+        setTeam(
+          userDocs.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as TeamMember[]
+        );
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching team:", err);
+        setLoading(false);
+      }
+    };
+
+    fetchTeam();
+    //});
+    //return () => unsubscribe();
+  }, [selectedCampaignId]);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-5">
@@ -30,25 +51,12 @@ const page = async () => {
           <BookUser />
           <h1 className="font-medium">Team Members</h1>
         </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              <Plus />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle className="mb-4">Members</SheetTitle>
-              <SheetDescription asChild>
-                <InviteForm />
-              </SheetDescription>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
       </div>
-      <div className="container mx-auto bg-neutral-50 dark:bg-neutral-900">
-        <DataTable columns={columns} data={data} />
-      </div>
+      {team.length === 0 ? (
+        <p>No teams found.</p>
+      ) : (
+        <DataTable columns={columns} data={team} />
+      )}
     </div>
   );
 };

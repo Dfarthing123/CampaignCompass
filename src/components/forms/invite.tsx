@@ -1,9 +1,5 @@
 "use client";
-import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,124 +7,95 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 
-import type { InviteFormSchema } from "@/types";
-import { toast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-});
-
-const auth = getAuth();
-
-const actionCodeSettings = {
-  // URL you want to redirect back to after the user clicks the email link.
-  // This domain (campaigncompapp.web.app) must be in your Firebase Console's authorized domains.
-  url: "https://campaign-compass-backend--campaigncompapp.europe-west4.hosted.app/approval?campaignId=someCampaign", // You can pass custom state like campaignId
-
-  // This must be true for email link sign-in to work correctly.
-  handleCodeInApp: true,
-
-  //   // Optional: If you have iOS/Android versions of your app, configure them here.
-  //   // Otherwise, Firebase will handle the link in the web browser.
-  //   iOS: {
-  //     bundleId: "com.yourcompany.yourapp.ios", // Replace with your actual iOS bundle ID
-  //   },
-  //   android: {
-  //     packageName: "com.yourcompany.yourapp.android", // Replace with your actual Android package name
-  //     installApp: true, // Set to true to install the app if not available
-  //     minimumVersion: "12", // Optional: minimum version of your app
-  //   },
-
-  // Optional: Use a custom Firebase Hosting domain if you have one configured
-  // and wish to use it for the email action links.
-  // linkDomain: 'your-custom-domain.com' // e.g., 'auth.campaigncompapp.com' if you have one
-};
+import { useState } from "react";
+import { app } from "@/lib/firebase";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { useAuth } from "@/context/auth-context";
+import { QRCodeSVG } from "qrcode.react";
+import { Button } from "../ui/button";
+import { PartyPopper, TriangleAlert } from "lucide-react";
+import { Input } from "../ui/input";
 
 function InviteForm() {
-  const form = useForm<InviteFormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
+  const [email, setEmail] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (values: InviteFormSchema) => {
+  const { selectedCampaignId } = useAuth();
+
+  // Send invite
+  const handleSendInvite = async () => {
+    setError("");
+    setInviteLink("");
+    setLoading(true);
+
     try {
-      await sendSignInLinkToEmail(auth, values.email, actionCodeSettings)
-        .then(() => {
-          // Save the email locally so you can retrieve it when the user returns to complete sign-in.
-          window.localStorage.setItem("emailForSignIn", values.email);
+      const functions = getFunctions(app);
+      const createInvitev2 = httpsCallable(functions, "createInvitev2");
 
-          toast({
-            variant: "default",
-            title: "Invite Sent",
-            description: "A sign-in link has been sent.",
-            //error.message || "An unexpected error occurred. Please try again.",
-          });
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.error(
-            `Error sending email sign-in link: ${errorCode} - ${errorMessage}`
-          );
-          // Display an error message to the user.
-          alert(`Failed to send sign-in link: ${errorMessage}`);
-        });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Invite Failed",
-        description:
-          error.message || "An unexpected error occurred. Please try again.",
+      const result: any = await createInvitev2({
+        email,
+        campaign: selectedCampaignId,
       });
+
+      setInviteLink(result.data.inviteLink);
+    } catch (err: any) {
+      console.error("Invite error:", err.message);
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Card className="w-full max-w-sm animate-in fade-in-90">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline">Invite member</CardTitle>
-        <CardDescription>Enter a valid email</CardDescription>
+        <CardTitle className="text-2xl">Invite</CardTitle>
+        <CardDescription>
+          Send an invite email to the prospective campaign volunteer.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting
-                ? "Sending invite mail..."
-                : "Send invite"}
-            </Button>
-          </form>
-        </Form>
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter a valid email"
+          className="w-full px-4 py-2 mb-4 border rounded-md"
+        />
+        <Button
+          className="w-full"
+          onClick={handleSendInvite}
+          disabled={loading || !email || inviteLink.length > 0}
+        >
+          {loading ? "Sending..." : "Send Invite Email"}
+        </Button>
+        {inviteLink && (
+          <div className="flex flex-col gap-5 my-5 border p-4 rounded-xl">
+            <p className="flex flex-row gap-3">
+              <PartyPopper /> Invite sent
+            </p>
+            <div>
+              <a
+                className="underline font-medium text-blue-600"
+                href={inviteLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Invite Link
+              </a>
+            </div>
+            <p>Scanable QR Code</p>
+            <QRCodeSVG value={inviteLink} className="w-full" size={300} />
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 text-destructive font-medium">
+            <TriangleAlert /> {error}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ import { Compass, LogOut, User } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { useEffect, useState } from "react";
 import { SidebarTrigger } from "./ui/sidebar";
-import { CustomAvatar } from "./customavatar";
 
 export default function Navbar() {
   const { user, signOut, loading } = useAuth();
@@ -56,7 +54,7 @@ export default function Navbar() {
     >
       <SidebarTrigger variant="outline" size="icon" className="p-4" />
       <div className="flex flex-row gap-2 font-medium">
-        <Compass /> Campaign Compass
+        <Compass /> WIN PC APP
       </div>
 
       <div className="flex items-center pe-2">
@@ -65,9 +63,10 @@ export default function Navbar() {
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <CustomAvatar sizeClass="h-10 w-10" />
-              </Button>
+              <Button
+                variant="ghost"
+                className="relative h-8 w-8 rounded-full"
+              ></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">

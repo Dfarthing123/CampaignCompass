@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   ColumnDef,
   SortingState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -19,6 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/tablepagination";
+import ExpandedRow from "@/components/forms/managerMember";
+import { useAuth } from "@/context/auth-context";
+import { TeamMember } from "./columns";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,21 +39,42 @@ export function DataTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 20, // ✅ Default to 20 rows per page
   });
+
+  const [expandedUsers, setExpandedUsers] = useState({});
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
+    onExpandedChange: setExpandedUsers,
+    getRowCanExpand: () => true,
     state: {
       sorting,
       rowSelection,
       pagination,
+      expanded: expandedUsers,
     },
   });
+
+  //
+  const { selectedCampaignId } = useAuth();
+  const [team, setTeam] = useState<TeamMember[]>([]);
+
+  function handleUserApproved(userId: string) {
+    const value =
+      team.find((u) => u.id === userId)?.status === "Approved"
+        ? "Screening"
+        : "Approved";
+    setTeam((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, status: value } : u))
+    );
+  }
 
   return (
     <div className="rounded-md border">
@@ -75,16 +100,33 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
+              <Fragment key={row.id}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+
+                {row.getIsExpanded() && selectedCampaignId && (
+                  <TableRow key={row.id + "-expanded"}>
+                    <TableCell colSpan={columns.length}>
+                      <ExpandedRow
+                        user={row.original as TeamMember}
+                        campaignId={selectedCampaignId}
+                        onApprove={handleUserApproved}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
             ))
           ) : (
             <TableRow>
