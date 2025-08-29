@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Compass, LogOut, User } from "lucide-react";
+import { LogOut, User2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { useEffect, useState } from "react";
 import { SidebarTrigger } from "./ui/sidebar";
-import { CustomAvatar } from "./customavatar";
 
 export default function Navbar() {
   const { user, signOut, loading } = useAuth();
@@ -55,9 +53,6 @@ export default function Navbar() {
       ${scrollHeight > 15 ? "border-b" : "border-0"}`}
     >
       <SidebarTrigger variant="outline" size="icon" className="p-4" />
-      <div className="flex flex-row gap-2 font-medium">
-        <Compass /> Campaign Compass
-      </div>
 
       <div className="flex items-center pe-2">
         {loading ? (
@@ -65,8 +60,8 @@ export default function Navbar() {
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <CustomAvatar sizeClass="h-10 w-10" />
+              <Button className="relative h-8 w-8 rounded-full">
+                <User2 />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -80,7 +75,7 @@ export default function Navbar() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleProfile}>
-                <User className="mr-2 h-4 w-4" />
+                <User2 className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>

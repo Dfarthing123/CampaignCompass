@@ -14,7 +14,7 @@ export const CampaignSelector = () => {
       aria-label="Select Campaign"
       value={selectedCampaignId || ""}
       onChange={(e) => setSelectedCampaignId(e.target.value)}
-      className="border rounded p-1"
+      className="border rounded p-1 w-full"
     >
       <option value="" disabled>
         Select a campaign

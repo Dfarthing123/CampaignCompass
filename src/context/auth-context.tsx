@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
   useContext,
   useEffect,
   useState,
   ReactNode,
-} from 'react';
+} from "react";
 import {
   User,
   onAuthStateChanged,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification
-} from 'firebase/auth';
-import { auth,db } from '@/lib/firebase';
-import { doc, setDoc, getDoc} from "firebase/firestore";
-import type { AuthFormValues } from '@/types';
+  sendEmailVerification,
+} from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import type { AuthFormValues } from "@/types";
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
+    null
+  );
   const router = useRouter();
 
   // Restore from localStorage on mount
@@ -48,7 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedCampaign = localStorage.getItem("selectedCampaignId");
 
     if (storedCampaign) setSelectedCampaignId(storedCampaign);
-
   }, []);
 
   // Auth state listener
@@ -64,32 +65,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch role when user or campaign changes
   useEffect(() => {
     if (!user || !selectedCampaignId) return;
-      
-      const fetchUserData = async () => {
-        try {
-          const docSnap = await getDoc(
-            doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
-          );
 
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setStatus(data.status || null);
-            setRole(data.role || null);
+    const fetchUserData = async () => {
+      try {
+        const docSnap = await getDoc(
+          doc(db, "campaignUsers", `${user.uid}-${selectedCampaignId}`)
+        );
 
-            if (data.status === "Screening") {
-              router.push("/screening");
-            }
-          } else {
-            setRole(null);
-            setStatus(null);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setStatus(data.status || null);
+          setRole(data.role || null);
+
+          if (data.status === "Screening" && user.emailVerified) {
+            router.push("/approval");
           }
-        } catch (error) {
-          console.error("Failed to fetch user role/status:", error);
+        } else {
           setRole(null);
           setStatus(null);
         }
-      };
-
+      } catch (error) {
+        console.error("Failed to fetch user role/status:", error);
+        setRole(null);
+        setStatus(null);
+      }
+    };
 
     fetchUserData();
   }, [user, selectedCampaignId]);
@@ -102,8 +102,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem("selectedCampaignId");
     }
   }, [selectedCampaignId]);
-
-
 
   const signIn = async (data: AuthFormValues) => {
     const userCredential = await signInWithEmailAndPassword(
@@ -124,8 +122,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Logout immediately
       await auth.signOut();
       throw {
-        code: 'auth/email-not-verified',
-        message: 'Your email is not verified. Would you like us to resend the verification email?',
+        code: "auth/email-not-verified",
+        message:
+          "Your email is not verified. Would you like us to resend the verification email?",
         user: userCredential,
       };
     }
@@ -145,27 +144,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       uid: newUser.uid,
       email: newUser.email,
       role: "user",
-      status: "awaiting_approval"
+      status: "awaiting_approval",
     });
-
 
     await setDoc(doc(db, "CampaignUsers", newUser.uid), {
       uid: newUser.uid,
       email: newUser.email,
       role: "user",
-      status: "Screening"
+      status: "Screening",
     });
 
     await sendEmailVerification(newUser);
     await firebaseSignOut(auth);
 
-    return { message: 'Verification email sent. Please check your inbox.' };
+    return {
+      message:
+        "Verification email sent. Please check your inbox and click the link provided.",
+    };
   };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
     localStorage.removeItem("selectedCampaignId");
-/*     localStorage.removeItem("selectedCampaignRole");
+    /*     localStorage.removeItem("selectedCampaignRole");
     localStorage.removeItem("selectedCampaignStatus"); */
     setSelectedCampaignId(null);
     setRole(null);
@@ -198,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

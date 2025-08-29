@@ -22,12 +22,12 @@ import {
   Gauge,
   BookUser,
   Flag,
-  Command,
-  Goal,
   Brain,
+  Send,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CampaignSelector } from "@/components/CampaignSelector";
+import Image from "next/image";
 
 // Menu items.
 const items = [
@@ -37,14 +37,14 @@ const items = [
     icon: Flag,
   },
   {
+    title: "Knowledge Base",
+    url: "/knowledgebase",
+    icon: Brain,
+  },
+  {
     title: "Dashboard",
     url: "/dashboard",
     icon: Gauge,
-  },
-  {
-    title: "Team",
-    url: "/members",
-    icon: BookUser,
   },
   {
     title: "Tasks",
@@ -57,27 +57,9 @@ const items = [
     icon: ContactRound,
   },
   {
-    title: "Knowledge Base",
-    url: "/knowledgebase",
-    icon: Brain,
-  },
-];
-
-const teams = [
-  {
-    name: "Party A",
-    logo: Goal,
-    plan: "Campaign X",
-  },
-  {
-    name: "Party B",
-    logo: Goal,
-    plan: "Campaign Y",
-  },
-  {
-    name: "Party C",
-    logo: Goal,
-    plan: "Campaign Z",
+    title: "Team",
+    url: "/members",
+    icon: BookUser,
   },
 ];
 
@@ -86,22 +68,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const adminItem = {
-    title: "Admin",
+    title: "Team Invites",
     url: "/admin",
-    icon: Command, // Or any icon you prefer
+    icon: Send,
   };
   const menuItems = role === "admin" ? [...items, adminItem] : items;
-
-  /*   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/signin");
-    } else if (loading && user && role === "guest") {
-      router.push("/signin");
-    }
-  }, [user, loading, router]); */
-
-  const noLoaderRoutes = ["/accept-invite"];
-
   const pathname = usePathname();
 
   useEffect(() => {
@@ -109,17 +80,14 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }, [pathname]);
 
   useEffect(() => {
-    const publicRoutes = ["/accept-invite"]; // add any other public routes here
-    const isPublicRoute = publicRoutes.includes(pathname);
-
-    if (!loading && !user && !isPublicRoute) {
+    if (!loading && !user) {
       router.push("/signin");
-    } else if (loading && user && role === "guest" && !isPublicRoute) {
+    } else if (loading && user && role === "guest") {
       router.push("/signin");
     }
   }, [user, loading, role, router]);
 
-  if ((loading || !user) && !noLoaderRoutes.includes(pathname)) {
+  if (loading || !user) {
     return (
       <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
         <div className="w-full max-w-md space-y-4">
@@ -132,25 +100,45 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-none pb-5 pt-3">
-        <SidebarHeader>
-          {/* <CampaignSwitcher teams={teams} /> */}
-          <CampaignSelector />
+      <Sidebar collapsible="icon" className="pb-5 pt-3  bg-white">
+        <SidebarHeader className=" bg-white">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                className="data-[slot=sidebar-menu-button]:!p-0"
+              >
+                <a href="#" className="overflow-visible !p-0">
+                  <Image
+                    src="/images/logo.jpg"
+                    alt="Logo"
+                    width={35}
+                    height={35}
+                  />
+                  <span className="font-semibold"> WIN PC APP</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className=" bg-white">
           <SidebarGroup>
-            <SidebarGroupLabel>menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem className="my-5">
+                  <CampaignSelector />
+                </SidebarMenuItem>
+
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
                       asChild
-                      // isActive={pathname === `${item.url}`}
+                      isActive={pathname === `${item.url}`}
+                      variant="default"
                     >
                       <a href={item.url} className="flex items-center gap-2">
                         <item.icon />
-                        <span className="font-medium">{item.title}</span>
+                        <span>{item.title}</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -159,13 +147,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter>
+        <SidebarFooter className="bg-white p-0">
           <span className="text-xs text-muted-foreground px-5 truncate">
             v.0.0.1
           </span>
         </SidebarFooter>
       </Sidebar>
-      <main className="w-full mx-5 mt-2 mb-5 ">
+      <main className="w-full mx-5 mt-2 mb-5">
         <Navbar />
         <div className="rounded-lg border bg-white dark:bg-neutral-950 p-5">
           {children}

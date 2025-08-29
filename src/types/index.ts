@@ -15,9 +15,9 @@ export type InviteFormSchema = z.infer<typeof inviteFormSchema>;
 
 
 const approvalFormSchema = z.object({
-  name: z.string(),
-  email: z.string(),
-  questions: z.string(),
+    Question1: z.string(),
+    Question2: z.string(),
+    Question3: z.string(),
 });
 
 export type ApprovalFormValues = z.infer<typeof approvalFormSchema>;

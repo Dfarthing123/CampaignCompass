@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { columns, Task } from "./columns";
+import { columns } from "./columns";
 import { DataTable } from "./datatable";
 import {
   Sheet,

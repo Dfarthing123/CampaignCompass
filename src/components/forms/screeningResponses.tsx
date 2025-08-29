@@ -1,5 +1,8 @@
 "use client";
 
+import { X } from "lucide-react";
+import { Button } from "../ui/button";
+
 interface ScreeningModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,36 +24,33 @@ export default function ScreeningModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-lg relative">
-        {/* Close button */}
-        <button
+        {/* <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl"
         >
-          &times;
-        </button>
+          <X />
+        </button> */}
 
-        <h2 className="text-xl font-bold mb-4">Screening Questions</h2>
+        <p className="text-xl font-medium mb-5">Screening answers</p>
 
         {questions && answers ? (
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <ol className="max-h-96 overflow-y-auto">
             {questionKeys.map((key) => (
-              <div key={key} className="border-b pb-2">
-                <p className="font-semibold">{questions[key]}</p>
-                <p className="text-gray-700">{answers[key] || "-"}</p>
-              </div>
+              <li key={key}>
+                <p className="mb-5">{questions[key]}</p>
+                <p className="font-medium">{answers[key] || "-"}</p>
+                <hr className="my-5" />
+              </li>
             ))}
-          </div>
+          </ol>
         ) : (
-          <p>No screening questions submitted.</p>
+          <p className="font-medium p-3"> Awaiting screening answers.</p>
         )}
 
-        <div className="mt-6 text-right">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
+        <div className="text-right">
+          <Button variant="outline" onClick={onClose} size="sm">
             Close
-          </button>
+          </Button>
         </div>
       </div>
     </div>

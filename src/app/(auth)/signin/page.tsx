@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PartyPopper, TriangleAlert } from "lucide-react";
 //import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -67,7 +68,9 @@ const SignInPage = () => {
       console.log(error.code, error);
       if (error.code === "auth/email-not-verified") {
         setUnverifiedUser(error.user);
-        setError("Your email is not verified. Please check your inbox.");
+        setError(
+          "Your email is not verified. Please check your inbox and click the link provided."
+        );
         // toast({
         //   variant: "destructive",
         //   title: "Your email is not verified",
@@ -89,7 +92,9 @@ const SignInPage = () => {
     if (!unverifiedUser) return;
     try {
       await resendVerificationEmail(unverifiedUser);
-      setSuccess("Verification email resent. Please check your inbox.");
+      setSuccess(
+        "Verification email resent. Please check your inbox and click the link provided."
+      );
       setError(null);
     } catch (err: any) {
       setError("Failed to resend verification email.");
@@ -103,19 +108,28 @@ const SignInPage = () => {
         <CardDescription>Enter your account details.</CardDescription>
       </CardHeader>
       <CardContent>
-        {error && <div className="text-red-600 mb-4">{error}</div>}
-        {success && <div className="text-green-600 mb-4">{success}</div>}
-        {unverifiedUser && (
-          <div className="my-4 text-sm text-gray-700">
-            Didn’t get the email?{" "}
-            <button
+        <div className="text-sm font-medium">
+          {error && (
+            <div className="text-destructive flex flex-row gap-3 mb-4">
+              <TriangleAlert /> {error}
+            </div>
+          )}
+          {success && (
+            <div className="text-green-600 flex flex-row gap-3 mb-4">
+              <PartyPopper /> {success}
+            </div>
+          )}
+          {unverifiedUser && (
+            <Button
               onClick={handleResendVerification}
-              className="text-blue-600 underline"
+              variant="outline"
+              className="w-full mb-4"
+              size="sm"
             >
               Resend Verification Email
-            </button>
-          </div>
-        )}
+            </Button>
+          )}
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

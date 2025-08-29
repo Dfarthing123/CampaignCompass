@@ -1,15 +1,13 @@
 "use client";
 
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { BicepsFlexed, Handshake } from "lucide-react";
+import { BicepsFlexed, Flag, Handshake } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/auth-context";
 import { useUserCampaigns } from "@/hooks/useUserCampaigns";
 
 export default function Home() {
-  const AVATAR_URI = "https://untitledui.com/images/avatars/jonathan-kelly";
-
   const { selectedCampaignId, setSelectedCampaignId } = useAuth();
   const { campaigns, loading } = useUserCampaigns();
 
@@ -17,12 +15,18 @@ export default function Home() {
 
   return (
     <div>
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex justify-start gap-3">
+          <Flag />
+          <h1 className="font-medium">Campaign</h1>
+        </div>
+      </div>
       <div className="mb-5">
         <div className="col-span-6 xl:col-span-6">
-          <div className="flex flex-col md:flex-row items-center gap-5 bg-neutral-100 rounded-lg border">
-            <Card className="flex flex-row gap-1 p-5 w-full md:w-auto border-0 shadow-none">
+          <div className="flex flex-col md:flex-row items-center gap-5 border rounded-lg">
+            <div className="flex flex-row gap-1 p-5 w-full md:w-auto rounded-s-lg border-e bg-neutral-50">
               <div
-                className="h-40 w-40 border bg-cover rounded-full"
+                className="h-40 w-40  bg-cover rounded-full"
                 style={{ backgroundImage: `url(${campaign?.ImagePath})` }}
               ></div>
               <Avatar>
@@ -33,7 +37,7 @@ export default function Home() {
                 <AvatarImage src="https://www.parks.ca.gov/pages/495/images/CurrentFlag.jpg" />
                 <AvatarFallback>CA</AvatarFallback>
               </Avatar>
-            </Card>
+            </div>
             <div className="w-full">
               <p className="font-bold text-3xl ">{campaign?.Candidate}</p>
               <p className="font-medium">{campaign?.Slug}</p>
@@ -43,7 +47,7 @@ export default function Home() {
           </div>
         </div>
         <Tabs defaultValue="policies">
-          <TabsList className="my-5 ">
+          <TabsList className="my-5 flex flex-row justify-center gap-2 bg-white">
             <TabsTrigger value="policies">Core Policies</TabsTrigger>
             <TabsTrigger value="endorsements">Endorsements</TabsTrigger>
           </TabsList>

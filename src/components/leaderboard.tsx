@@ -1,5 +1,4 @@
 import { Trophy, Medal, Award, Crown } from "lucide-react";
-import { CustomAvatar, CustomUsername } from "./customavatar";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -40,8 +39,6 @@ const Leaderboard = () => {
                       item.points
                     )}
                   </span>
-                  <CustomAvatar sizeClass="h-10 w-10" />
-                  <CustomUsername sizeClass="font-bold" />
                 </div>
                 <span>
                   {item.badge === "Persuader" ? (

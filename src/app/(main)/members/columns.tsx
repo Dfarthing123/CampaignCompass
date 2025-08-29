@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,68 +11,43 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import Link from "next/link";
 
 export type TeamMember = {
   id: string;
   username: string;
+  email: string;
+  role: string;
+  createdAt: any;
+  reportsTo: string;
+  coins?: number;
+  status?: string;
 };
 
 export const columns: ColumnDef<TeamMember>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        checked={row.getIsSelected()}
-      />
-    ),
+    accessorKey: "createdAt",
+    header: "Created At",
+    cell: ({ row }) =>
+      row.original.createdAt?.toDate
+        ? row.original.createdAt.toDate().toLocaleString()
+        : "-",
   },
+  { accessorKey: "email", header: "Email" },
+  { accessorKey: "role", header: "Role" },
+  { accessorKey: "coins", header: "KPP" },
+  { accessorKey: "status", header: "Status" },
   {
-    accessorKey: "username",
-    header: "Team member",
-    cell: ({ row }) => {
-      const username = row.getValue("username");
-      return <Link href={"/members/" + username}> {username as string} </Link>;
-    },
-  },
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const teamMemeber = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(teamMemeber.id)}
-            ></DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Approve member</DropdownMenuItem>
-            <DropdownMenuItem>Delete member</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    id: "expander",
+    header: "Approval",
+    cell: ({ row }) =>
+      row.getCanExpand() ? (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={row.getToggleExpandedHandler()}
+        >
+          {row.getIsExpanded() ? "Close" : "Actions"}
+        </Button>
+      ) : null,
   },
 ];
