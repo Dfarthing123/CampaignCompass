@@ -1,6 +1,7 @@
 "use client";
 
 import { Compass } from "lucide-react";
+import Image from "next/image";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -9,7 +10,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-col gap-4 p-6 md:p-10 w-auto">
           <div className="flex justify-center gap-2 md:justify-start">
             <a href="/" className="flex items-center gap-2 font-medium">
-              <Compass className="size-5" />
+              <Image src="/images/logo.jpg" alt="Logo" width={40} height={40} />
               WIN PC APP
             </a>
           </div>
@@ -21,7 +22,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
         <div className="bg-muted relative hidden lg:block">
           <img
-            src="https://images.unsplash.com/photo-1610208350283-b01598dcd86e?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="/images/logo.jpg"
             alt="Image"
             className="absolute inset-0 h-full w-full object-cover brightness-[0.6]"
           />

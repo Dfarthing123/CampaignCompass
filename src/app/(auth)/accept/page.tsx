@@ -110,9 +110,10 @@ const AcceptInvite: React.FC = () => {
   return (
     <div className="max-w-md mx-auto mt-12 p-6 border rounded-xl bg-white">
       {status === "success" ? (
-        <p className="flex flex-col gap-3 font-medium text-xl">
-          <PartyPopper size={64} /> {message}
-        </p>
+        <div className="flex flex-row items-center justify-center gap-2 mt-5">
+          <PartyPopper size={32} />
+          <p className="font-medium text-2xl">All done</p>
+        </div>
       ) : (
         <div>
           <p className="font-medium text-xl">
