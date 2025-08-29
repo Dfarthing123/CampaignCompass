@@ -62,7 +62,6 @@ const page = () => {
       <div className="grid grid-cols-6 gap-4 my-5">
         <div className="col-span-6 xl:col-span-6 bg-neutral-50 dark:bg-neutral-900 rounded-xl border p-4">
           <div className="flex flex-col md:flex-row items-center gap-5">
-            <Card className="flex flex-row gap-1 border rounded-xl p-5 w-full md:w-auto"></Card>
             <div className="w-full">
               <p className="font-medium">Role: {role}</p>
               <p className="font-medium">Status: {status}</p>

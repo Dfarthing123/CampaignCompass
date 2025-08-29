@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Compass, LogOut, User } from "lucide-react";
+import { Compass, LogOut, User2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { useEffect, useState } from "react";
 import { SidebarTrigger } from "./ui/sidebar";
@@ -63,10 +63,9 @@ export default function Navbar() {
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-8 w-8 rounded-full"
-              ></Button>
+              <Button className="relative h-8 w-8 rounded-full">
+                <User2 />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
@@ -79,7 +78,7 @@ export default function Navbar() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleProfile}>
-                <User className="mr-2 h-4 w-4" />
+                <User2 className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>
