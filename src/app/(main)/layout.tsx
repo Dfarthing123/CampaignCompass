@@ -92,10 +92,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, loading, role, router]);
 
-  if (
-    (role === "user" || loading || !user) &&
-    !noLoaderRoutes.includes(pathname)
-  ) {
+  if ((loading || !user) && !noLoaderRoutes.includes(pathname)) {
     return (
       <div className="absolute top-0 left-0 h-full w-full z-50 flex flex-col items-center justify-center min-h-screen p-4 pt-16 bg-white">
         <div className="w-full max-w-md space-y-4">
