@@ -109,43 +109,44 @@ const AcceptInvite: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto mt-12 p-6 border rounded-xl bg-white">
-      <p className="font-medium text-xl">
-        You have been invited to join {campaign?.Candidate}'s campaign.
-      </p>
-      <p className="my-5">
-        To accept your invitation, please enter the email address where you
-        received the invite and create a password.
-      </p>
-
       {status === "success" ? (
-        <p className="flex flex-row gap-3 font-medium text-xl">
-          <PartyPopper /> {message}
+        <p className="flex flex-col gap-3 font-medium text-xl">
+          <PartyPopper size={64} /> {message}
         </p>
       ) : (
-        <form onSubmit={handleAcceptInvite} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Your invited email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Choose a password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <Button
-            type="submit"
-            disabled={status === "submitting"}
-            className="w-full"
-          >
-            {status === "submitting" ? "Processing..." : "Accept Invite"}
-          </Button>
-          {message && <p className="text-destructive">ERROR: {message}</p>}
-        </form>
+        <div>
+          <p className="font-medium text-xl">
+            You have been invited to join {campaign?.Candidate}'s campaign.
+          </p>
+          <p className="my-5">
+            To accept your invitation, please enter the email address where you
+            received the invite and create a password.
+          </p>
+          <form onSubmit={handleAcceptInvite} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Your invited email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Choose a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button
+              type="submit"
+              disabled={status === "submitting"}
+              className="w-full"
+            >
+              {status === "submitting" ? "Processing..." : "Accept Invite"}
+            </Button>
+            {message && <p className="text-destructive">ERROR: {message}</p>}
+          </form>
+        </div>
       )}
     </div>
   );
