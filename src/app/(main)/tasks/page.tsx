@@ -15,6 +15,14 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Plus, ClipboardList } from "lucide-react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { app } from "@/lib/firebase";
+import { useAuth } from "@/context/auth-context";
+
+
+
+
 
 type TaskItem = {
   id: string;
@@ -27,6 +35,8 @@ type TaskItem = {
 const TaskListPage = () => {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const authUser = useAuth().user;
+  const { selectedCampaignId } = useAuth();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -46,6 +56,34 @@ const TaskListPage = () => {
 
     fetchTasks();
   }, []);
+
+  const handleGetTask = async () => {
+
+      
+      try {
+
+        const functions = getFunctions(app,"us-central1");
+        const createTask = httpsCallable(functions, "createTask");
+
+        const result: any = await createTask({
+          latitude: 33.3413708,
+          longitude: -118.3290535,
+          campaignId: selectedCampaignId
+
+        });
+
+        
+      } catch (err: any) {
+        console.error("Invite error:", err);
+        
+      } finally {
+        console.log("Done");
+      }
+    };
+
+
+
+
 
   return (
     <div className="">
@@ -79,38 +117,13 @@ const TaskListPage = () => {
       {tasks.length === 0 ? (
         <p>No tasks found.</p>
       ) : (
-        // <div className="overflow-x-auto">
-        //   <table className="min-w-full border border-gray-300 rounded shadow-sm text-sm">
-        //     <thead className="bg-gray-100">
-        //       <tr>
-        //         <th className="px-4 py-2 border">Address</th>
-        //         <th className="px-4 py-2 border">Affiliation</th>
-        //         <th className="px-4 py-2 border">Date</th>
-        //         <th className="px-4 py-2 border">Info</th>
-        //       </tr>
-        //     </thead>
-        //     <tbody>
-        //       {tasks.map((task) => (
-        //         <tr key={task.id} className="hover:bg-gray-50">
-        //           <td className="px-4 py-2 border">{task.Address}</td>
-        //           <td className="px-4 py-2 border">{task.Affiliation}</td>
 
-        //           <td className="px-4 py-2 border">
-        //             {task.Date instanceof Object && "seconds" in task.Date
-        //               ? new Date(task.Date.seconds * 1000).toLocaleDateString()
-        //               : task.Date}
-        //           </td>
-        //           <td className="px-4 py-2 border">
-        //             {typeof task.Info === "object"
-        //               ? JSON.stringify(task.Info)
-        //               : task.Info}
-        //           </td>
-        //         </tr>
-        //       ))}
-        //     </tbody>
-        //   </table>
-        // </div>
+        <>
+        <button onClick={handleGetTask}className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50">Get Task</button>
+
+
         <DataTable columns={columns} data={tasks} />
+        </>
       )}
     </div>
   );
